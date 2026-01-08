@@ -1,6 +1,4 @@
 <?php
-//
-
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
@@ -17,7 +15,7 @@ class ACM_Shortcode {
 
         if ( ! $post_id || get_post_type( $post_id ) !== 'acm_widget' ) return '';
 
-        // Obtener data
+        // Datos
         $raw_value = get_post_meta( $post_id, '_acm_value', true );
         $label     = get_post_meta( $post_id, '_acm_label', true );
         $color     = get_post_meta( $post_id, '_acm_color', true );
@@ -29,29 +27,34 @@ class ACM_Shortcode {
 
         $prefix    = get_post_meta( $post_id, '_acm_prefix', true );
         $suffix    = get_post_meta( $post_id, '_acm_suffix', true );
+        
+        // Duración (default 2.5s)
+        $duration  = get_post_meta( $post_id, '_acm_duration', true );
+        if ( empty( $duration ) ) $duration = 2.5;
 
-        // Render PHP inicial (incluye prefijos/sufijos)
+        // Render PHP inicial
         $formatted_number = $this->format_metric( $raw_value, $format, $decimals );
         $final_output     = esc_html( $prefix ) . $formatted_number . esc_html( $suffix );
+        $style_attr       = $color ? "style='border-color: {$color}; color: {$color};'" : '';
 
-        $style_attr = $color ? "style='border-color: {$color}; color: {$color};'" : '';
-
-        // Data attributes para JS
+        // Data attributes
         $data_attr = '';
         if ( $format !== 'date' && is_numeric( $raw_value ) ) {
             $data_attr  = 'data-acm-value="' . esc_attr( $raw_value ) . '" ';
             $data_attr .= 'data-acm-format="' . esc_attr( $format ) . '" ';
             $data_attr .= 'data-acm-decimals="' . esc_attr( $decimals ) . '" ';
-            // Pasamos prefijo y sufijo al JS
             $data_attr .= 'data-acm-prefix="' . esc_attr( $prefix ) . '" ';
-            $data_attr .= 'data-acm-suffix="' . esc_attr( $suffix ) . '"';
+            $data_attr .= 'data-acm-suffix="' . esc_attr( $suffix ) . '" ';
+            // Nueva data para duración (convertimos a ms para JS si quieres, o en JS)
+            // Lo pasamos en segundos crudos y que JS multiplique
+            $data_attr .= 'data-acm-duration="' . esc_attr( $duration ) . '"';
         }
 
         ob_start();
         ?>
         <div class="acm-widget-card">
             <div class="acm-value" <?php echo $style_attr; ?> <?php echo $data_attr; ?>>
-                <?php echo $final_output; // Ya está escapado arriba ?>
+                <?php echo $final_output; ?>
             </div>
             <div class="acm-label">
                 <?php echo esc_html( $label ); ?>
@@ -65,31 +68,17 @@ class ACM_Shortcode {
         if ( empty( $value ) && $value !== '0' ) return $value;
 
         switch ( $format ) {
-            case 'number':
-                return number_format_i18n( (float) $value, $decimals );
-
-            case 'money':
-                return '$ ' . number_format_i18n( (float) $value, $decimals );
-
-            case 'percent':
-                return number_format_i18n( (float) $value, $decimals ) . '%';
-
-            case 'compact':
-                return $this->format_compact_number( (float) $value, $decimals );
-
-            case 'money_compact':
-                return '$ ' . $this->format_compact_number( (float) $value, $decimals );
-
-            case 'weight':
-                return $this->format_weight( (float) $value, $decimals );
-
-            case 'date':
+            case 'number': return number_format_i18n( (float) $value, $decimals );
+            case 'money': return '$ ' . number_format_i18n( (float) $value, $decimals );
+            case 'percent': return number_format_i18n( (float) $value, $decimals ) . '%';
+            case 'compact': return $this->format_compact_number( (float) $value, $decimals );
+            case 'money_compact': return '$ ' . $this->format_compact_number( (float) $value, $decimals );
+            case 'weight': return $this->format_weight( (float) $value, $decimals );
+            case 'date': 
                 $timestamp = strtotime( $value );
                 return $timestamp ? date_i18n( get_option( 'date_format' ), $timestamp ) : $value;
-
             case 'raw':
-            default:
-                return $value;
+            default: return $value;
         }
     }
 
