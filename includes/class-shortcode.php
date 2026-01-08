@@ -1,58 +1,57 @@
 <?php
+//
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-/**
- * Class ACM_Shortcode
- * * Procesa el shortcode y aplica el formateo de datos.
- */
 class ACM_Shortcode {
 
-    /**
-     * Constructor.
-     */
     public function __construct() {
         add_shortcode( 'acm_widget', [ $this, 'render_shortcode' ] );
     }
 
-    /**
-     * Genera el HTML del widget.
-     * * @param array $atts Atributos del shortcode.
-     * @return string HTML renderizado.
-     */
     public function render_shortcode( $atts ) {
         $atts = shortcode_atts( [ 'id' => 0 ], $atts, 'acm_widget' );
         $post_id = intval( $atts['id'] );
 
-        if ( ! $post_id || get_post_type( $post_id ) !== 'acm_widget' ) {
-            return '';
-        }
+        if ( ! $post_id || get_post_type( $post_id ) !== 'acm_widget' ) return '';
 
-        // Obtener data cruda
+        // Obtener data
         $raw_value = get_post_meta( $post_id, '_acm_value', true );
         $label     = get_post_meta( $post_id, '_acm_label', true );
         $color     = get_post_meta( $post_id, '_acm_color', true );
         $format    = get_post_meta( $post_id, '_acm_format', true );
+        
+        $decimals  = get_post_meta( $post_id, '_acm_decimals', true );
+        if ( $decimals === '' ) $decimals = 0;
+        $decimals = intval( $decimals );
 
-        // Procesar valor inicial (Server Side Render para SEO/No-JS)
-        $formatted_value = $this->format_metric( $raw_value, $format );
+        $prefix    = get_post_meta( $post_id, '_acm_prefix', true );
+        $suffix    = get_post_meta( $post_id, '_acm_suffix', true );
+
+        // Render PHP inicial (incluye prefijos/sufijos)
+        $formatted_number = $this->format_metric( $raw_value, $format, $decimals );
+        $final_output     = esc_html( $prefix ) . $formatted_number . esc_html( $suffix );
 
         $style_attr = $color ? "style='border-color: {$color}; color: {$color};'" : '';
 
-        // Preparamos atributos data para JS
-        // Si es fecha, no pasamos valor numérico para evitar animación errónea
+        // Data attributes para JS
         $data_attr = '';
         if ( $format !== 'date' && is_numeric( $raw_value ) ) {
-            $data_attr = 'data-acm-value="' . esc_attr( $raw_value ) . '" data-acm-format="' . esc_attr( $format ) . '"';
+            $data_attr  = 'data-acm-value="' . esc_attr( $raw_value ) . '" ';
+            $data_attr .= 'data-acm-format="' . esc_attr( $format ) . '" ';
+            $data_attr .= 'data-acm-decimals="' . esc_attr( $decimals ) . '" ';
+            // Pasamos prefijo y sufijo al JS
+            $data_attr .= 'data-acm-prefix="' . esc_attr( $prefix ) . '" ';
+            $data_attr .= 'data-acm-suffix="' . esc_attr( $suffix ) . '"';
         }
 
         ob_start();
         ?>
         <div class="acm-widget-card">
             <div class="acm-value" <?php echo $style_attr; ?> <?php echo $data_attr; ?>>
-                <?php echo esc_html( $formatted_value ); ?>
+                <?php echo $final_output; // Ya está escapado arriba ?>
             </div>
             <div class="acm-label">
                 <?php echo esc_html( $label ); ?>
@@ -62,31 +61,31 @@ class ACM_Shortcode {
         return ob_get_clean();
     }
 
-    /**
-     * Aplica reglas de formato al valor (PHP Fallback).
-     * * @param mixed $value Valor crudo.
-     * @param string $format Tipo de formato.
-     * @return string Valor formateado.
-     */
-    private function format_metric( $value, $format ) {
-        if ( empty( $value ) ) return $value;
+    private function format_metric( $value, $format, $decimals = 0 ) {
+        if ( empty( $value ) && $value !== '0' ) return $value;
 
         switch ( $format ) {
-            case 'money':
-                return '$ ' . number_format_i18n( (float) $value, 2 );
-
             case 'number':
-                return number_format_i18n( (float) $value );
+                return number_format_i18n( (float) $value, $decimals );
+
+            case 'money':
+                return '$ ' . number_format_i18n( (float) $value, $decimals );
+
+            case 'percent':
+                return number_format_i18n( (float) $value, $decimals ) . '%';
+
+            case 'compact':
+                return $this->format_compact_number( (float) $value, $decimals );
+
+            case 'money_compact':
+                return '$ ' . $this->format_compact_number( (float) $value, $decimals );
+
+            case 'weight':
+                return $this->format_weight( (float) $value, $decimals );
 
             case 'date':
                 $timestamp = strtotime( $value );
-                if ( $timestamp ) {
-                    return date_i18n( get_option( 'date_format' ), $timestamp );
-                }
-                return $value;
-
-            case 'compact':
-                return $this->format_compact_number( (float) $value );
+                return $timestamp ? date_i18n( get_option( 'date_format' ), $timestamp ) : $value;
 
             case 'raw':
             default:
@@ -94,23 +93,21 @@ class ACM_Shortcode {
         }
     }
 
-    /**
-     * Convierte números grandes a formatos legibles.
-     * * @param float $n Número a formatear.
-     * @return string Número compacto.
-     */
-    private function format_compact_number( $n ) {
-        if ( $n < 1000 ) {
-            return number_format_i18n( $n );
-        }
-
+    private function format_compact_number( $n, $decimals ) {
+        if ( $n < 1000 ) return number_format_i18n( $n, $decimals );
         $suffix = [ '', 'k', 'M', 'B', 'T' ];
         $power  = floor( log( $n, 1000 ) );
+        if ( $power >= count( $suffix ) ) $power = count( $suffix ) - 1;
+        return number_format_i18n( round( $n / pow( 1000, $power ), $decimals ), $decimals ) . $suffix[ $power ];
+    }
 
-        if ( $power >= count( $suffix ) ) {
-            $power = count( $suffix ) - 1;
-        }
-
-        return round( $n / pow( 1000, $power ), 1 ) . $suffix[ $power ];
+    private function format_weight( $g, $decimals ) {
+        $suffixes = [ 'g', 'kg', 't' ];
+        if ( $g <= 0 ) return '0 g';
+        $power = floor( log( $g, 1000 ) );
+        if ( $power >= count( $suffixes ) ) $power = count( $suffixes ) - 1;
+        if ( $power < 0 ) $power = 0;
+        $number = $g / pow( 1000, $power );
+        return number_format_i18n( round( $number, $decimals ), $decimals ) . ' ' . $suffixes[ $power ];
     }
 }
