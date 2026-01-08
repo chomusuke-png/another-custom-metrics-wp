@@ -36,15 +36,22 @@ class ACM_Shortcode {
         $color     = get_post_meta( $post_id, '_acm_color', true );
         $format    = get_post_meta( $post_id, '_acm_format', true );
 
-        // Procesar valor según formato
+        // Procesar valor inicial (Server Side Render para SEO/No-JS)
         $formatted_value = $this->format_metric( $raw_value, $format );
 
         $style_attr = $color ? "style='border-color: {$color}; color: {$color};'" : '';
 
+        // Preparamos atributos data para JS
+        // Si es fecha, no pasamos valor numérico para evitar animación errónea
+        $data_attr = '';
+        if ( $format !== 'date' && is_numeric( $raw_value ) ) {
+            $data_attr = 'data-acm-value="' . esc_attr( $raw_value ) . '" data-acm-format="' . esc_attr( $format ) . '"';
+        }
+
         ob_start();
         ?>
         <div class="acm-widget-card">
-            <div class="acm-value" <?php echo $style_attr; ?>>
+            <div class="acm-value" <?php echo $style_attr; ?> <?php echo $data_attr; ?>>
                 <?php echo esc_html( $formatted_value ); ?>
             </div>
             <div class="acm-label">
@@ -56,7 +63,7 @@ class ACM_Shortcode {
     }
 
     /**
-     * Aplica reglas de formato al valor.
+     * Aplica reglas de formato al valor (PHP Fallback).
      * * @param mixed $value Valor crudo.
      * @param string $format Tipo de formato.
      * @return string Valor formateado.
@@ -66,16 +73,12 @@ class ACM_Shortcode {
 
         switch ( $format ) {
             case 'money':
-                // Asume formato estándar con 2 decimales y signo $.
-                // floatval asegura que sea número antes de formatear
                 return '$ ' . number_format_i18n( (float) $value, 2 );
 
             case 'number':
-                // Formato numérico estándar de WP (separador de miles)
                 return number_format_i18n( (float) $value );
 
             case 'date':
-                // Intenta convertir a timestamp, si falla usa el valor actual
                 $timestamp = strtotime( $value );
                 if ( $timestamp ) {
                     return date_i18n( get_option( 'date_format' ), $timestamp );
@@ -92,7 +95,7 @@ class ACM_Shortcode {
     }
 
     /**
-     * Convierte números grandes a formatos legibles (1k, 1M, 1B).
+     * Convierte números grandes a formatos legibles.
      * * @param float $n Número a formatear.
      * @return string Número compacto.
      */
@@ -104,7 +107,6 @@ class ACM_Shortcode {
         $suffix = [ '', 'k', 'M', 'B', 'T' ];
         $power  = floor( log( $n, 1000 ) );
 
-        // Evitar índices fuera de rango
         if ( $power >= count( $suffix ) ) {
             $power = count( $suffix ) - 1;
         }

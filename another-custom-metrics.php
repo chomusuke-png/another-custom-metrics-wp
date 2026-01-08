@@ -45,11 +45,21 @@ class ACM_Init {
      * * @return void
      */
     public function enqueue_assets() {
+        // Estilos
         wp_enqueue_style( 
             'acm-styles', 
             ACM_URL . 'assets/css/style.css', 
             [], 
             '1.0.0' 
+        );
+
+        // Scripts (Nuevo)
+        wp_enqueue_script(
+            'acm-script',
+            ACM_URL . 'assets/js/script.js',
+            [], // Sin dependencias (Vanilla JS)
+            '1.0.0',
+            true // Cargar en el footer
         );
     }
 }
