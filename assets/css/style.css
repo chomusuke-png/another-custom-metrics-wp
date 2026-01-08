@@ -1,0 +1,36 @@
+/* Contenedor principal de la tarjeta */
+.acm-widget-card {
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease;
+    max-width: 300px;
+    margin: 10px auto;
+}
+
+.acm-widget-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* Valor grande de la estadística */
+.acm-value {
+    font-size: 3rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 10px;
+    border-bottom: 3px solid transparent; /* El color se inyecta vía inline styles */
+    display: inline-block;
+}
+
+/* Etiqueta descriptiva */
+.acm-label {
+    font-size: 1rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 500;
+}
