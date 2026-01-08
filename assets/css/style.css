@@ -1,11 +1,10 @@
 /* Contenedor principal de la tarjeta */
 .acm-widget-card {
     background: #ffffff;
-    border: 1px solid #e5e5e5;
     padding: 20px;
     text-align: center;
     transition: transform 0.2s ease;
-    max-width: 1000px;
+    max-width: 1200px;
 }
 
 /* Valor grande de la estadística */

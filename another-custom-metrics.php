@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Another Custom Metrics
  * Description: Sistema de gestión de widgets de estadísticas mediante CPT y Shortcodes.
- * Version: 1.0.2
+ * Version: 1.0.3
  * Author: Zumito
  * Text Domain: another-custom-metrics
  */
