@@ -126,7 +126,7 @@ class ACM_Metabox {
 
     public function render_preview_metabox( $post ) {
         ?>
-        <div style="display: flex; align-items: center; justify-content: center; min-height: 150px; background: #fafafa;">
+        <div style="display: flex; align-items: center; justify-content: center; background: #fafafa;">
             <div id="acm-admin-preview" style="width: 100%;">
                 <p style="text-align:center; color:#999;">Cargando vista previa...</p>
             </div>
