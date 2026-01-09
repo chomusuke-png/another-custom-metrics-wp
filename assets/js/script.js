@@ -1,11 +1,10 @@
 /**
  * ACM Script
- * Maneja la animación y la vista previa en admin.
+ * Maneja animaciones: Count Up, Slot Machine, Blur, Bounce.
  */
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- LÓGICA DE FORMATO (COMPARTIDA) ---
-    
+    // --- UTILS FORMATO ---
     const formatCompactGeneric = (value, decimals) => {
         if (value === 0) return '0';
         const suffixes = ['', 'k', 'M', 'B', 'T'];
@@ -15,7 +14,6 @@ document.addEventListener('DOMContentLoaded', () => {
         let shortValue = value / Math.pow(1000, safeSuffixNum);
         return shortValue.toFixed(decimals) + suffix;
     };
-
     const formatWeight = (value, decimals) => {
         if (value <= 0) return '0 g';
         const suffixes = ['g', 'kg', 't'];
@@ -25,7 +23,6 @@ document.addEventListener('DOMContentLoaded', () => {
         let shortValue = value / Math.pow(1000, safeSuffixNum);
         return shortValue.toFixed(decimals) + ' ' + suffix;
     };
-
     const formatNumberOnly = (value, format, decimals) => {
         if (value < 0) value = 0;
         switch (format) {
@@ -39,25 +36,63 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- ANIMACIÓN ---
+    // --- ANIMACIÓN: SLOT MACHINE (TRAGAMONEDAS) ---
+    const animateSlotMachine = (element, finalString, duration) => {
+        element.innerHTML = ''; // Limpiar
+        element.style.display = 'inline-flex';
+        element.style.overflow = 'hidden';
+        element.style.height = '1.2em'; // Altura fija basada en fuente
+        element.style.alignItems = 'flex-start'; // Alinear arriba para que la cinta baje
 
-    const animateCounter = (element) => {
-        const rawTarget = parseFloat(element.getAttribute('data-acm-value'));
-        const format    = element.getAttribute('data-acm-format');
-        const decimals  = parseInt(element.getAttribute('data-acm-decimals')) || 0;
-        const prefix    = element.getAttribute('data-acm-prefix') || '';
-        const suffix    = element.getAttribute('data-acm-suffix') || '';
+        // Analizar cada caracter
+        const chars = finalString.split('');
         
-        // Obtener duración en segundos y convertir a ms
-        let durationSec = parseFloat(element.getAttribute('data-acm-duration'));
-        if (isNaN(durationSec)) durationSec = 2.5; // fallback
-        const duration = durationSec * 1000; 
+        chars.forEach((char, index) => {
+            const wrapper = document.createElement('span');
+            wrapper.style.display = 'inline-block';
+            wrapper.style.lineHeight = '1.2em';
+            
+            if (/\d/.test(char)) {
+                // Es un número: crear cinta 0..char
+                const digit = parseInt(char, 10);
+                const column = document.createElement('span');
+                column.style.display = 'flex';
+                column.style.flexDirection = 'column';
+                column.style.transition = `transform ${duration}ms cubic-bezier(0.1, 0.7, 0.1, 1)`; // Easing suave
+                
+                // Generar números 0..digit (o 0..9 para efecto completo si quisiéramos)
+                // Para slot machine simple, vamos de 0 hasta el número objetivo
+                // Un truco visual: añadir números random antes para dar efecto de giro
+                let content = '';
+                // Pequeño ciclo extra para dar sensación de giro
+                for(let i=0; i<=digit; i++) {
+                    content += `<span>${i}</span>`;
+                }
+                column.innerHTML = content;
+                wrapper.appendChild(column);
+                element.appendChild(wrapper);
 
-        if (isNaN(rawTarget) || format === 'date') return;
+                // Forzar reflow
+                requestAnimationFrame(() => {
+                    // Mover la columna hacia arriba para mostrar el dígito final
+                    // La altura de cada número es 1.2em. Si el digito es 5, hay 6 items (0,1,2,3,4,5).
+                    // Queremos mostrar el último. TranslateY debe ser -(count-1) * 100% o ems
+                    column.style.transform = `translateY(-${digit}00%)`; // Como cada span mide 100% de alto del padre si flex.. wait
+                    // Mejor usar ems ya que lineHeight es 1.2em
+                    column.style.transform = `translateY(-${digit * 1.2}em)`;
+                });
 
+            } else {
+                // Símbolo estático ($, ., k, %)
+                wrapper.textContent = char;
+                element.appendChild(wrapper);
+            }
+        });
+    };
+
+    // --- ANIMACIÓN: COUNT UP (NORMAL) ---
+    const animateCountUp = (element, rawTarget, format, decimals, prefix, suffix, duration) => {
         const startTime = performance.now();
-        element.textContent = prefix + formatNumberOnly(0, format, decimals) + suffix;
-        
         const step = (currentTime) => {
             const elapsed = currentTime - startTime;
             const progress = Math.min(elapsed / duration, 1);
@@ -75,11 +110,56 @@ document.addEventListener('DOMContentLoaded', () => {
         requestAnimationFrame(step);
     };
 
-    // --- INICIALIZAR FRONTEND (Observer) ---
+    // --- ANIMACIÓN: CSS BASED (BLUR, BOUNCE) ---
+    const animateCssEffect = (element, rawTarget, format, decimals, prefix, suffix, effectClass) => {
+        // Poner valor final inmediatamente
+        element.textContent = prefix + formatNumberOnly(rawTarget, format, decimals) + suffix;
+        
+        // Resetear animación removiendo clase y forzando reflow
+        element.classList.remove(effectClass);
+        void element.offsetWidth; // Trigger reflow
+        element.classList.add(effectClass);
+    };
+
+    // --- ROUTER PRINCIPAL ---
+    const startAnimation = (element) => {
+        const rawTarget = parseFloat(element.getAttribute('data-acm-value'));
+        const format    = element.getAttribute('data-acm-format');
+        const decimals  = parseInt(element.getAttribute('data-acm-decimals')) || 0;
+        const prefix    = element.getAttribute('data-acm-prefix') || '';
+        const suffix    = element.getAttribute('data-acm-suffix') || '';
+        const animType  = element.getAttribute('data-acm-anim') || 'count';
+        
+        let durationSec = parseFloat(element.getAttribute('data-acm-duration'));
+        if (isNaN(durationSec)) durationSec = 2.5;
+        const duration = durationSec * 1000;
+
+        if (isNaN(rawTarget) || format === 'date') return;
+
+        // Limpiar clases previas
+        element.classList.remove('acm-effect-blur', 'acm-effect-bounce');
+        element.style.display = ''; // Reset slot styles
+
+        if (animType === 'slot') {
+            // Generar string final primero
+            const finalStr = prefix + formatNumberOnly(rawTarget, format, decimals) + suffix;
+            animateSlotMachine(element, finalStr, duration);
+        } else if (animType === 'blur') {
+            animateCssEffect(element, rawTarget, format, decimals, prefix, suffix, 'acm-effect-blur');
+        } else if (animType === 'bounce') {
+            animateCssEffect(element, rawTarget, format, decimals, prefix, suffix, 'acm-effect-bounce');
+        } else {
+            // Count (Default)
+            animateCountUp(element, rawTarget, format, decimals, prefix, suffix, duration);
+        }
+    };
+
+
+    // --- OBSERVER ---
     const observer = new IntersectionObserver((entries, observer) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                animateCounter(entry.target);
+                startAnimation(entry.target);
                 observer.unobserve(entry.target);
             }
         });
@@ -88,14 +168,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.acm-value').forEach(el => observer.observe(el));
 
 
-    // --- LÓGICA DE VISTA PREVIA EN ADMIN ---
-    
+    // --- PREVIEW ADMIN ---
     const previewContainer = document.getElementById('acm-admin-preview');
     if (previewContainer) {
-        
-        // Función para actualizar la preview
         const updatePreview = () => {
-            // Recoger valores de los inputs
             const val      = document.getElementById('acm_value').value;
             const label    = document.getElementById('acm_label').value;
             const color    = document.getElementById('acm_color').value;
@@ -104,9 +180,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const prefix   = document.getElementById('acm_prefix').value;
             const suffix   = document.getElementById('acm_suffix').value;
             const duration = document.getElementById('acm_duration').value || 2.5;
+            const anim     = document.getElementById('acm_anim').value;
 
-            // Construir HTML simulado
-            // Nota: Si no es numérico, solo mostramos el texto sin animación
             let isNumeric = !isNaN(parseFloat(val)) && format !== 'date';
             let dataAttrs = '';
 
@@ -118,12 +193,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     data-acm-prefix="${prefix}" 
                     data-acm-suffix="${suffix}"
                     data-acm-duration="${duration}"
+                    data-acm-anim="${anim}"
                 `;
             }
-
             const styleAttr = color ? `style="border-color: ${color}; color: ${color};"` : '';
             
-            // HTML base
+            // HTML base (Render inicial simple)
             let html = `
                 <div class="acm-widget-card" style="margin:0;">
                     <div class="acm-value" ${styleAttr} ${dataAttrs}>
@@ -132,18 +207,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="acm-label">${label}</div>
                 </div>
             `;
-            
             previewContainer.innerHTML = html;
 
-            // Disparar animación si es numérico
             if (isNumeric) {
-                const newMetric = previewContainer.querySelector('.acm-value');
-                animateCounter(newMetric);
+                startAnimation(previewContainer.querySelector('.acm-value'));
             }
         };
 
-        // Escuchar eventos en todos los inputs relevantes
-        const inputs = ['acm_value', 'acm_label', 'acm_color', 'acm_format', 'acm_decimals', 'acm_prefix', 'acm_suffix', 'acm_duration'];
+        const inputs = ['acm_value', 'acm_label', 'acm_color', 'acm_format', 'acm_decimals', 'acm_prefix', 'acm_suffix', 'acm_duration', 'acm_anim'];
         inputs.forEach(id => {
             const el = document.getElementById(id);
             if (el) {
@@ -151,8 +222,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 el.addEventListener('change', updatePreview);
             }
         });
-
-        // Ejecutar una vez al inicio
         updatePreview();
     }
 });

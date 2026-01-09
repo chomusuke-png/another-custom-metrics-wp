@@ -1,4 +1,6 @@
 <?php
+//
+
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
@@ -20,17 +22,19 @@ class ACM_Shortcode {
         $label     = get_post_meta( $post_id, '_acm_label', true );
         $color     = get_post_meta( $post_id, '_acm_color', true );
         $format    = get_post_meta( $post_id, '_acm_format', true );
+        $prefix    = get_post_meta( $post_id, '_acm_prefix', true );
+        $suffix    = get_post_meta( $post_id, '_acm_suffix', true );
         
         $decimals  = get_post_meta( $post_id, '_acm_decimals', true );
         if ( $decimals === '' ) $decimals = 0;
         $decimals = intval( $decimals );
-
-        $prefix    = get_post_meta( $post_id, '_acm_prefix', true );
-        $suffix    = get_post_meta( $post_id, '_acm_suffix', true );
         
-        // Duración (default 2.5s)
         $duration  = get_post_meta( $post_id, '_acm_duration', true );
         if ( empty( $duration ) ) $duration = 2.5;
+
+        // Tipo de animación (nuevo)
+        $anim = get_post_meta( $post_id, '_acm_anim', true );
+        if ( empty( $anim ) ) $anim = 'count';
 
         // Render PHP inicial
         $formatted_number = $this->format_metric( $raw_value, $format, $decimals );
@@ -45,15 +49,14 @@ class ACM_Shortcode {
             $data_attr .= 'data-acm-decimals="' . esc_attr( $decimals ) . '" ';
             $data_attr .= 'data-acm-prefix="' . esc_attr( $prefix ) . '" ';
             $data_attr .= 'data-acm-suffix="' . esc_attr( $suffix ) . '" ';
-            // Nueva data para duración (convertimos a ms para JS si quieres, o en JS)
-            // Lo pasamos en segundos crudos y que JS multiplique
-            $data_attr .= 'data-acm-duration="' . esc_attr( $duration ) . '"';
+            $data_attr .= 'data-acm-duration="' . esc_attr( $duration ) . '" ';
+            $data_attr .= 'data-acm-anim="' . esc_attr( $anim ) . '"';
         }
 
         ob_start();
         ?>
         <div class="acm-widget-card">
-            <div class="acm-value" <?php echo $style_attr; ?> <?php echo $data_attr; ?>>
+            <div class="acm-value acm-anim-<?php echo esc_attr( $anim ); ?>" <?php echo $style_attr; ?> <?php echo $data_attr; ?>>
                 <?php echo $final_output; ?>
             </div>
             <div class="acm-label">

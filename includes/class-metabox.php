@@ -1,54 +1,22 @@
 <?php
+//
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-/**
- * Class ACM_Metabox
- * * Gestiona los campos personalizados y la vista previa en metaboxes separados.
- */
 class ACM_Metabox {
 
-    /**
-     * Constructor.
-     */
     public function __construct() {
         add_action( 'add_meta_boxes', [ $this, 'add_meta_box' ] );
         add_action( 'save_post', [ $this, 'save_meta_box' ] );
     }
 
-    /**
-     * Registra las cajas de meta (Configuración y Preview).
-     * * @return void
-     */
     public function add_meta_box() {
-        // 1. Metabox de Configuración (Columna Principal)
-        add_meta_box(
-            'acm_widget_config',
-            'Configuración de la Métrica',
-            [ $this, 'render_config_metabox' ],
-            'acm_widget',
-            'normal', // Columna central
-            'high'
-        );
-
-        // 2. Metabox de Vista Previa (Barra Lateral)
-        add_meta_box(
-            'acm_widget_preview',
-            'Vista Previa en Vivo',
-            [ $this, 'render_preview_metabox' ],
-            'acm_widget',
-            'side',   // Barra lateral
-            'high'
-        );
+        add_meta_box( 'acm_widget_config', 'Configuración de la Métrica', [ $this, 'render_config_metabox' ], 'acm_widget', 'normal', 'high' );
+        add_meta_box( 'acm_widget_preview', 'Vista Previa en Vivo', [ $this, 'render_preview_metabox' ], 'acm_widget', 'side', 'high' );
     }
 
-    /**
-     * Renderiza el formulario de configuración.
-     * * @param WP_Post $post Objeto del post actual.
-     * @return void
-     */
     public function render_config_metabox( $post ) {
         $metric_value    = get_post_meta( $post->ID, '_acm_value', true );
         $metric_label    = get_post_meta( $post->ID, '_acm_label', true );
@@ -58,13 +26,14 @@ class ACM_Metabox {
         $metric_prefix   = get_post_meta( $post->ID, '_acm_prefix', true );
         $metric_suffix   = get_post_meta( $post->ID, '_acm_suffix', true );
         $metric_duration = get_post_meta( $post->ID, '_acm_duration', true );
+        $metric_anim     = get_post_meta( $post->ID, '_acm_anim', true ); // NUEVO CAMPO
 
         // Defaults
         if ( empty( $metric_format ) ) { $metric_format = 'raw'; }
         if ( $metric_decimals === '' ) { $metric_decimals = '0'; }
         if ( empty( $metric_duration ) ) { $metric_duration = '2.5'; }
+        if ( empty( $metric_anim ) ) { $metric_anim = 'count'; } // Default Count
 
-        // Nonce de seguridad (Solo es necesario declararlo una vez dentro del form)
         wp_nonce_field( 'acm_save_metabox_data', 'acm_metabox_nonce' );
         ?>
         <div class="acm-metabox-wrapper" style="display: grid; gap: 15px;">
@@ -105,10 +74,21 @@ class ACM_Metabox {
                 </p>
             </div>
 
-            <p>
-                <label for="acm_duration"><strong>Duración Animación (segundos):</strong></label><br>
-                <input type="number" id="acm_duration" name="acm_duration" value="<?php echo esc_attr( $metric_duration ); ?>" step="0.1" min="0" style="width: 100%;">
-            </p>
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px;">
+                <p style="margin: 0;">
+                    <label for="acm_anim"><strong>Tipo de Animación:</strong></label><br>
+                    <select id="acm_anim" name="acm_anim" style="width: 100%;">
+                        <option value="count" <?php selected( $metric_anim, 'count' ); ?>>Conteo (Normal)</option>
+                        <option value="slot" <?php selected( $metric_anim, 'slot' ); ?>>Tragamonedas (Slot Machine)</option>
+                        <option value="blur" <?php selected( $metric_anim, 'blur' ); ?>>Revelado Desenfoque</option>
+                        <option value="bounce" <?php selected( $metric_anim, 'bounce' ); ?>>Rebote / Zoom</option>
+                    </select>
+                </p>
+                <p style="margin: 0;">
+                    <label for="acm_duration"><strong>Duración (s):</strong></label><br>
+                    <input type="number" id="acm_duration" name="acm_duration" value="<?php echo esc_attr( $metric_duration ); ?>" step="0.1" min="0" style="width: 100%;">
+                </p>
+            </div>
 
             <p>
                 <label for="acm_label"><strong>Etiqueta / Descripción:</strong></label><br>
@@ -127,11 +107,6 @@ class ACM_Metabox {
         <?php
     }
 
-    /**
-     * Renderiza la caja de vista previa.
-     * * @param WP_Post $post Objeto del post actual.
-     * @return void
-     */
     public function render_preview_metabox( $post ) {
         ?>
         <div style="display: flex; align-items: center; justify-content: center; min-height: 150px; background: #fafafa;">
@@ -143,11 +118,6 @@ class ACM_Metabox {
         <?php
     }
 
-    /**
-     * Guarda los datos.
-     * * @param int $post_id ID del post.
-     * @return void
-     */
     public function save_meta_box( $post_id ) {
         if ( ! isset( $_POST['acm_metabox_nonce'] ) || ! wp_verify_nonce( $_POST['acm_metabox_nonce'], 'acm_save_metabox_data' ) ) return;
         if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) return;
@@ -162,6 +132,7 @@ class ACM_Metabox {
             '_acm_prefix'   => 'sanitize_text_field',
             '_acm_suffix'   => 'sanitize_text_field',
             '_acm_duration' => 'sanitize_text_field',
+            '_acm_anim'     => 'sanitize_key', // Nuevo
         ];
 
         foreach ( $fields as $key => $sanitizer ) {

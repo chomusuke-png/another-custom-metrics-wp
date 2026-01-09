@@ -15,6 +15,7 @@
     margin-bottom: 10px;
     border-bottom: 3px solid transparent;
     display: inline-block;
+    position: relative; 
 }
 
 /* Etiqueta descriptiva */
@@ -24,4 +25,46 @@
     text-transform: uppercase;
     letter-spacing: 1px;
     font-weight: 500;
+}
+
+/* --- ANIMACIONES --- */
+
+/* 1. BLUR REVEAL */
+.acm-effect-blur {
+    animation: acmBlurIn 1.5s ease-out forwards;
+}
+
+@keyframes acmBlurIn {
+    0% {
+        opacity: 0;
+        filter: blur(20px);
+        transform: scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        filter: blur(0);
+        transform: scale(1);
+    }
+}
+
+/* 2. BOUNCE / ZOOM */
+.acm-effect-bounce {
+    animation: acmBounceIn 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+@keyframes acmBounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* 3. SLOT MACHINE UTILS */
+/* Aseguramos que los números internos de la cinta se alineen bien */
+.acm-value span {
+    text-align: center;
 }
