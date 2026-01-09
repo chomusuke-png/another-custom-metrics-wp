@@ -12,10 +12,14 @@ class ACM_CPT {
 
     /**
      * Constructor.
-     * * Registra el hook de init.
+     * * Registra el hook de init y las columnas personalizadas.
      */
     public function __construct() {
         add_action( 'init', [ $this, 'register_post_type' ] );
+        
+        // Hooks para columnas en el admin
+        add_filter( 'manage_acm_widget_posts_columns', [ $this, 'add_custom_columns' ] );
+        add_action( 'manage_acm_widget_posts_custom_column', [ $this, 'render_custom_columns' ], 10, 2 );
     }
 
     /**
@@ -52,5 +56,51 @@ class ACM_CPT {
         ];
 
         register_post_type( 'acm_widget', $args );
+    }
+
+    /**
+     * Agrega columnas a la tabla de listado de posts.
+     * * @param array $columns Columnas existentes.
+     * @return array Columnas modificadas.
+     */
+    public function add_custom_columns( $columns ) {
+        $new_columns = [];
+        // Reordenar para que las columnas nuevas salgan justo después del título
+        foreach ( $columns as $key => $title ) {
+            $new_columns[ $key ] = $title;
+            if ( 'title' === $key ) {
+                $new_columns['acm_shortcode'] = 'Shortcode';
+                $new_columns['acm_value']     = 'Valor Actual'; 
+            }
+        }
+        return $new_columns;
+    }
+
+    /**
+     * Renderiza el contenido de las columnas personalizadas.
+     * * @param string $column Nombre de la columna.
+     * @param int $post_id ID del post.
+     * @return void
+     */
+    public function render_custom_columns( $column, $post_id ) {
+        switch ( $column ) {
+            case 'acm_shortcode':
+                // Input de solo lectura o code block fácil de copiar
+                echo '<code style="background:#e0e0e0; padding:3px 5px; border-radius:3px; user-select: all;">[acm_widget id="' . $post_id . '"]</code>';
+                break;
+
+            case 'acm_value':
+                // Mostramos una vista rápida del valor configurado
+                $val = get_post_meta( $post_id, '_acm_value', true );
+                $prefix = get_post_meta( $post_id, '_acm_prefix', true );
+                $suffix = get_post_meta( $post_id, '_acm_suffix', true );
+                
+                if ( ! empty( $val ) ) {
+                    echo '<strong>' . esc_html( $prefix . $val . $suffix ) . '</strong>';
+                } else {
+                    echo '<span style="color:#aaa;">—</span>';
+                }
+                break;
+        }
     }
 }
