@@ -4,7 +4,7 @@
  */
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- UTILS FORMATO ---
+    // --- UTILS FORMATO (Sin cambios) ---
     const formatCompactGeneric = (value, decimals) => {
         if (value === 0) return '0';
         const suffixes = ['', 'k', 'M', 'B', 'T'];
@@ -36,35 +36,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- ANIMACIÓN: SLOT MACHINE (TRAGAMONEDAS) ---
+    // --- ANIMACIONES (Sin cambios en lógica interna) ---
     const animateSlotMachine = (element, finalString, duration) => {
-        element.innerHTML = ''; // Limpiar
+        element.innerHTML = '';
         element.style.display = 'inline-flex';
         element.style.overflow = 'hidden';
-        element.style.height = '1.2em'; // Altura fija basada en fuente
-        element.style.alignItems = 'flex-start'; // Alinear arriba para que la cinta baje
+        element.style.height = '1.2em'; 
+        element.style.alignItems = 'flex-start';
 
-        // Analizar cada caracter
         const chars = finalString.split('');
-        
-        chars.forEach((char, index) => {
+        chars.forEach((char) => {
             const wrapper = document.createElement('span');
             wrapper.style.display = 'inline-block';
             wrapper.style.lineHeight = '1.2em';
             
             if (/\d/.test(char)) {
-                // Es un número: crear cinta 0..char
                 const digit = parseInt(char, 10);
                 const column = document.createElement('span');
                 column.style.display = 'flex';
                 column.style.flexDirection = 'column';
-                column.style.transition = `transform ${duration}ms cubic-bezier(0.1, 0.7, 0.1, 1)`; // Easing suave
+                column.style.transition = `transform ${duration}ms cubic-bezier(0.1, 0.7, 0.1, 1)`;
                 
-                // Generar números 0..digit (o 0..9 para efecto completo si quisiéramos)
-                // Para slot machine simple, vamos de 0 hasta el número objetivo
-                // Un truco visual: añadir números random antes para dar efecto de giro
                 let content = '';
-                // Pequeño ciclo extra para dar sensación de giro
                 for(let i=0; i<=digit; i++) {
                     content += `<span>${i}</span>`;
                 }
@@ -72,25 +65,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 wrapper.appendChild(column);
                 element.appendChild(wrapper);
 
-                // Forzar reflow
                 requestAnimationFrame(() => {
-                    // Mover la columna hacia arriba para mostrar el dígito final
-                    // La altura de cada número es 1.2em. Si el digito es 5, hay 6 items (0,1,2,3,4,5).
-                    // Queremos mostrar el último. TranslateY debe ser -(count-1) * 100% o ems
-                    column.style.transform = `translateY(-${digit}00%)`; // Como cada span mide 100% de alto del padre si flex.. wait
-                    // Mejor usar ems ya que lineHeight es 1.2em
                     column.style.transform = `translateY(-${digit * 1.2}em)`;
                 });
-
             } else {
-                // Símbolo estático ($, ., k, %)
                 wrapper.textContent = char;
                 element.appendChild(wrapper);
             }
         });
     };
 
-    // --- ANIMACIÓN: COUNT UP (NORMAL) ---
     const animateCountUp = (element, rawTarget, format, decimals, prefix, suffix, duration) => {
         const startTime = performance.now();
         const step = (currentTime) => {
@@ -98,7 +82,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const progress = Math.min(elapsed / duration, 1);
             const ease = 1 - Math.pow(1 - progress, 4);
             const currentVal = rawTarget * ease;
-            
             element.textContent = prefix + formatNumberOnly(currentVal, format, decimals) + suffix;
 
             if (progress < 1) {
@@ -110,18 +93,13 @@ document.addEventListener('DOMContentLoaded', () => {
         requestAnimationFrame(step);
     };
 
-    // --- ANIMACIÓN: CSS BASED (BLUR, BOUNCE) ---
     const animateCssEffect = (element, rawTarget, format, decimals, prefix, suffix, effectClass) => {
-        // Poner valor final inmediatamente
         element.textContent = prefix + formatNumberOnly(rawTarget, format, decimals) + suffix;
-        
-        // Resetear animación removiendo clase y forzando reflow
         element.classList.remove(effectClass);
-        void element.offsetWidth; // Trigger reflow
+        void element.offsetWidth;
         element.classList.add(effectClass);
     };
 
-    // --- ROUTER PRINCIPAL ---
     const startAnimation = (element) => {
         const rawTarget = parseFloat(element.getAttribute('data-acm-value'));
         const format    = element.getAttribute('data-acm-format');
@@ -129,19 +107,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const prefix    = element.getAttribute('data-acm-prefix') || '';
         const suffix    = element.getAttribute('data-acm-suffix') || '';
         const animType  = element.getAttribute('data-acm-anim') || 'count';
-        
         let durationSec = parseFloat(element.getAttribute('data-acm-duration'));
         if (isNaN(durationSec)) durationSec = 2.5;
         const duration = durationSec * 1000;
 
         if (isNaN(rawTarget) || format === 'date') return;
 
-        // Limpiar clases previas
         element.classList.remove('acm-effect-blur', 'acm-effect-bounce');
-        element.style.display = ''; // Reset slot styles
+        element.style.display = '';
 
         if (animType === 'slot') {
-            // Generar string final primero
             const finalStr = prefix + formatNumberOnly(rawTarget, format, decimals) + suffix;
             animateSlotMachine(element, finalStr, duration);
         } else if (animType === 'blur') {
@@ -149,13 +124,10 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (animType === 'bounce') {
             animateCssEffect(element, rawTarget, format, decimals, prefix, suffix, 'acm-effect-bounce');
         } else {
-            // Count (Default)
             animateCountUp(element, rawTarget, format, decimals, prefix, suffix, duration);
         }
     };
 
-
-    // --- OBSERVER ---
     const observer = new IntersectionObserver((entries, observer) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -168,19 +140,23 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.acm-value').forEach(el => observer.observe(el));
 
 
-    // --- PREVIEW ADMIN ---
+    // --- PREVIEW ADMIN (ACTUALIZADO CON COLORES) ---
     const previewContainer = document.getElementById('acm-admin-preview');
     if (previewContainer) {
         const updatePreview = () => {
-            const val      = document.getElementById('acm_value').value;
-            const label    = document.getElementById('acm_label').value;
-            const color    = document.getElementById('acm_color').value;
-            const format   = document.getElementById('acm_format').value;
-            const decimals = document.getElementById('acm_decimals').value || 0;
-            const prefix   = document.getElementById('acm_prefix').value;
-            const suffix   = document.getElementById('acm_suffix').value;
-            const duration = document.getElementById('acm_duration').value || 2.5;
-            const anim     = document.getElementById('acm_anim').value;
+            const val         = document.getElementById('acm_value').value;
+            const label       = document.getElementById('acm_label').value;
+            const format      = document.getElementById('acm_format').value;
+            const decimals    = document.getElementById('acm_decimals').value || 0;
+            const prefix      = document.getElementById('acm_prefix').value;
+            const suffix      = document.getElementById('acm_suffix').value;
+            const duration    = document.getElementById('acm_duration').value || 2.5;
+            const anim        = document.getElementById('acm_anim').value;
+            
+            // Colores
+            const accentColor = document.getElementById('acm_color').value;
+            const bgColor     = document.getElementById('acm_bg_color').value;
+            const borderColor = document.getElementById('acm_border_color').value;
 
             let isNumeric = !isNaN(parseFloat(val)) && format !== 'date';
             let dataAttrs = '';
@@ -196,12 +172,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     data-acm-anim="${anim}"
                 `;
             }
-            const styleAttr = color ? `style="border-color: ${color}; color: ${color};"` : '';
+
+            // Estilos dinámicos para la vista previa
+            const valueStyle = accentColor ? `style="color: ${accentColor}; border-color: ${accentColor};"` : '';
             
-            // HTML base (Render inicial simple)
+            // Estilo tarjeta
+            let cardStyle = 'margin:0;';
+            if(bgColor) cardStyle += `background-color: ${bgColor};`;
+            if(borderColor) cardStyle += `border-color: ${borderColor};`;
+
+            // HTML base
             let html = `
-                <div class="acm-widget-card" style="margin:0;">
-                    <div class="acm-value" ${styleAttr} ${dataAttrs}>
+                <div class="acm-widget-card" style="${cardStyle}">
+                    <div class="acm-value" ${valueStyle} ${dataAttrs}>
                         ${prefix}${val}${suffix} 
                     </div>
                     <div class="acm-label">${label}</div>
@@ -214,7 +197,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        const inputs = ['acm_value', 'acm_label', 'acm_color', 'acm_format', 'acm_decimals', 'acm_prefix', 'acm_suffix', 'acm_duration', 'acm_anim'];
+        const inputs = [
+            'acm_value', 'acm_label', 'acm_format', 'acm_decimals', 
+            'acm_prefix', 'acm_suffix', 'acm_duration', 'acm_anim',
+            'acm_color', 'acm_bg_color', 'acm_border_color'
+        ];
+        
         inputs.forEach(id => {
             const el = document.getElementById(id);
             if (el) {

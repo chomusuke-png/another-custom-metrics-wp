@@ -1,5 +1,4 @@
 <?php
-//
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
@@ -18,21 +17,26 @@ class ACM_Metabox {
     }
 
     public function render_config_metabox( $post ) {
-        $metric_value    = get_post_meta( $post->ID, '_acm_value', true );
-        $metric_label    = get_post_meta( $post->ID, '_acm_label', true );
-        $metric_color    = get_post_meta( $post->ID, '_acm_color', true );
-        $metric_format   = get_post_meta( $post->ID, '_acm_format', true );
-        $metric_decimals = get_post_meta( $post->ID, '_acm_decimals', true );
-        $metric_prefix   = get_post_meta( $post->ID, '_acm_prefix', true );
-        $metric_suffix   = get_post_meta( $post->ID, '_acm_suffix', true );
-        $metric_duration = get_post_meta( $post->ID, '_acm_duration', true );
-        $metric_anim     = get_post_meta( $post->ID, '_acm_anim', true ); // NUEVO CAMPO
+        // Recuperar valores
+        $metric_value        = get_post_meta( $post->ID, '_acm_value', true );
+        $metric_label        = get_post_meta( $post->ID, '_acm_label', true );
+        $metric_format       = get_post_meta( $post->ID, '_acm_format', true );
+        $metric_decimals     = get_post_meta( $post->ID, '_acm_decimals', true );
+        $metric_prefix       = get_post_meta( $post->ID, '_acm_prefix', true );
+        $metric_suffix       = get_post_meta( $post->ID, '_acm_suffix', true );
+        $metric_duration     = get_post_meta( $post->ID, '_acm_duration', true );
+        $metric_anim         = get_post_meta( $post->ID, '_acm_anim', true );
+        
+        // Colores
+        $metric_color        = get_post_meta( $post->ID, '_acm_color', true ); // Acento
+        $metric_bg_color     = get_post_meta( $post->ID, '_acm_bg_color', true ); // Fondo
+        $metric_border_color = get_post_meta( $post->ID, '_acm_border_color', true ); // Borde
 
         // Defaults
         if ( empty( $metric_format ) ) { $metric_format = 'raw'; }
         if ( $metric_decimals === '' ) { $metric_decimals = '0'; }
         if ( empty( $metric_duration ) ) { $metric_duration = '2.5'; }
-        if ( empty( $metric_anim ) ) { $metric_anim = 'count'; } // Default Count
+        if ( empty( $metric_anim ) ) { $metric_anim = 'count'; }
 
         wp_nonce_field( 'acm_save_metabox_data', 'acm_metabox_nonce' );
         ?>
@@ -95,12 +99,25 @@ class ACM_Metabox {
                 <input type="text" id="acm_label" name="acm_label" value="<?php echo esc_attr( $metric_label ); ?>" style="width: 100%;">
             </p>
 
-            <p>
-                <label for="acm_color"><strong>Color de Acento:</strong></label><br>
-                <input type="color" id="acm_color" name="acm_color" value="<?php echo esc_attr( $metric_color ? $metric_color : '#0073aa' ); ?>">
-            </p>
+            <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;">
 
-            <div style="background: #f0f0f1; padding: 10px; border-left: 4px solid #0073aa;">
+            <p><strong>Apariencia de la Tarjeta:</strong></p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                <p style="margin: 0;">
+                    <label for="acm_color">Acento (Texto/Valor):</label><br>
+                    <input type="color" id="acm_color" name="acm_color" value="<?php echo esc_attr( $metric_color ? $metric_color : '#0073aa' ); ?>" style="width: 100%; height: 40px;">
+                </p>
+                <p style="margin: 0;">
+                    <label for="acm_bg_color">Fondo (Card):</label><br>
+                    <input type="color" id="acm_bg_color" name="acm_bg_color" value="<?php echo esc_attr( $metric_bg_color ? $metric_bg_color : '#ffffff' ); ?>" style="width: 100%; height: 40px;">
+                </p>
+                <p style="margin: 0;">
+                    <label for="acm_border_color">Borde (Card):</label><br>
+                    <input type="color" id="acm_border_color" name="acm_border_color" value="<?php echo esc_attr( $metric_border_color ? $metric_border_color : '#e5e5e5' ); ?>" style="width: 100%; height: 40px;">
+                </p>
+            </div>
+
+            <div style="background: #f0f0f1; padding: 10px; border-left: 4px solid #0073aa; margin-top: 20px;">
                 <strong>Shortcode:</strong> <code>[acm_widget id="<?php echo $post->ID; ?>"]</code>
             </div>
         </div>
@@ -124,19 +141,21 @@ class ACM_Metabox {
         if ( ! current_user_can( 'edit_post', $post_id ) ) return;
 
         $fields = [
-            '_acm_value'    => 'sanitize_text_field',
-            '_acm_label'    => 'sanitize_text_field',
-            '_acm_color'    => 'sanitize_hex_color',
-            '_acm_format'   => 'sanitize_key',
-            '_acm_decimals' => 'intval',
-            '_acm_prefix'   => 'sanitize_text_field',
-            '_acm_suffix'   => 'sanitize_text_field',
-            '_acm_duration' => 'sanitize_text_field',
-            '_acm_anim'     => 'sanitize_key', // Nuevo
+            '_acm_value'        => 'sanitize_text_field',
+            '_acm_label'        => 'sanitize_text_field',
+            '_acm_color'        => 'sanitize_hex_color',
+            '_acm_format'       => 'sanitize_key',
+            '_acm_decimals'     => 'intval',
+            '_acm_prefix'       => 'sanitize_text_field',
+            '_acm_suffix'       => 'sanitize_text_field',
+            '_acm_duration'     => 'sanitize_text_field',
+            '_acm_anim'         => 'sanitize_key',
+            '_acm_bg_color'     => 'sanitize_hex_color', // Nuevo
+            '_acm_border_color' => 'sanitize_hex_color', // Nuevo
         ];
 
         foreach ( $fields as $key => $sanitizer ) {
-            $input_name = substr( $key, 1 );
+            $input_name = substr( $key, 1 ); // _acm_value -> acm_value
             if ( isset( $_POST[ $input_name ] ) ) {
                 update_post_meta( $post_id, $key, call_user_func( $sanitizer, $_POST[ $input_name ] ) );
             }

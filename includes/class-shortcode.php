@@ -1,5 +1,4 @@
 <?php
-//
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
@@ -17,10 +16,9 @@ class ACM_Shortcode {
 
         if ( ! $post_id || get_post_type( $post_id ) !== 'acm_widget' ) return '';
 
-        // Datos
+        // Datos principales
         $raw_value = get_post_meta( $post_id, '_acm_value', true );
         $label     = get_post_meta( $post_id, '_acm_label', true );
-        $color     = get_post_meta( $post_id, '_acm_color', true );
         $format    = get_post_meta( $post_id, '_acm_format', true );
         $prefix    = get_post_meta( $post_id, '_acm_prefix', true );
         $suffix    = get_post_meta( $post_id, '_acm_suffix', true );
@@ -32,14 +30,27 @@ class ACM_Shortcode {
         $duration  = get_post_meta( $post_id, '_acm_duration', true );
         if ( empty( $duration ) ) $duration = 2.5;
 
-        // Tipo de animación (nuevo)
         $anim = get_post_meta( $post_id, '_acm_anim', true );
         if ( empty( $anim ) ) $anim = 'count';
+
+        // Colores
+        $color        = get_post_meta( $post_id, '_acm_color', true ); // Acento
+        $bg_color     = get_post_meta( $post_id, '_acm_bg_color', true ); // Fondo
+        $border_color = get_post_meta( $post_id, '_acm_border_color', true ); // Borde
 
         // Render PHP inicial
         $formatted_number = $this->format_metric( $raw_value, $format, $decimals );
         $final_output     = esc_html( $prefix ) . $formatted_number . esc_html( $suffix );
-        $style_attr       = $color ? "style='border-color: {$color}; color: {$color};'" : '';
+
+        // Estilos
+        // Estilo para el valor (Texto/Acento)
+        $value_style = $color ? "style='color: {$color}; border-color: {$color};'" : '';
+        
+        // Estilo para la tarjeta (Fondo/Borde)
+        $card_style_arr = [];
+        if ( $bg_color ) { $card_style_arr[] = "background-color: {$bg_color};"; }
+        if ( $border_color ) { $card_style_arr[] = "border-color: {$border_color};"; }
+        $card_style = ! empty( $card_style_arr ) ? 'style="' . implode( ' ', $card_style_arr ) . '"' : '';
 
         // Data attributes
         $data_attr = '';
@@ -55,8 +66,8 @@ class ACM_Shortcode {
 
         ob_start();
         ?>
-        <div class="acm-widget-card">
-            <div class="acm-value acm-anim-<?php echo esc_attr( $anim ); ?>" <?php echo $style_attr; ?> <?php echo $data_attr; ?>>
+        <div class="acm-widget-card" <?php echo $card_style; ?>>
+            <div class="acm-value acm-anim-<?php echo esc_attr( $anim ); ?>" <?php echo $value_style; ?> <?php echo $data_attr; ?>>
                 <?php echo $final_output; ?>
             </div>
             <div class="acm-label">
