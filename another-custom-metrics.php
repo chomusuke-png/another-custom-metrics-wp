@@ -26,17 +26,17 @@ class ACM_Init {
         new ACM_Shortcode();
 
         add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_assets' ] );
-        // NUEVO: Encolar también en el admin para la vista previa
         add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
     }
 
     public function enqueue_assets() {
-        // Solo cargar en admin si estamos editando el post type correcto
         if ( is_admin() ) {
             $screen = get_current_screen();
             if ( ! $screen || $screen->post_type !== 'acm_widget' ) {
                 return;
             }
+            // CRÍTICO: Cargar librería de medios de WP
+            wp_enqueue_media();
         }
 
         wp_enqueue_style( 'acm-styles', ACM_URL . 'assets/css/style.css', [], '1.0.0' );

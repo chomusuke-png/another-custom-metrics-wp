@@ -34,19 +34,27 @@ class ACM_Shortcode {
         if ( empty( $anim ) ) $anim = 'count';
 
         // Colores
-        $color        = get_post_meta( $post_id, '_acm_color', true ); // Acento
-        $bg_color     = get_post_meta( $post_id, '_acm_bg_color', true ); // Fondo
-        $border_color = get_post_meta( $post_id, '_acm_border_color', true ); // Borde
+        $color        = get_post_meta( $post_id, '_acm_color', true ); 
+        $bg_color     = get_post_meta( $post_id, '_acm_bg_color', true ); 
+        $border_color = get_post_meta( $post_id, '_acm_border_color', true );
+
+        // Imagen
+        $image_id     = get_post_meta( $post_id, '_acm_image_id', true );
+        $image_html   = '';
+        if ( $image_id ) {
+            $image_url = wp_get_attachment_image_url( $image_id, 'medium' );
+            if ( $image_url ) {
+                $image_html = '<img class="acm-icon" src="' . esc_url( $image_url ) . '" alt="" />';
+            }
+        }
 
         // Render PHP inicial
         $formatted_number = $this->format_metric( $raw_value, $format, $decimals );
         $final_output     = esc_html( $prefix ) . $formatted_number . esc_html( $suffix );
 
         // Estilos
-        // Estilo para el valor (Texto/Acento)
         $value_style = $color ? "style='color: {$color}; border-color: {$color};'" : '';
         
-        // Estilo para la tarjeta (Fondo/Borde)
         $card_style_arr = [];
         if ( $bg_color ) { $card_style_arr[] = "background-color: {$bg_color};"; }
         if ( $border_color ) { $card_style_arr[] = "border-color: {$border_color};"; }
@@ -67,6 +75,7 @@ class ACM_Shortcode {
         ob_start();
         ?>
         <div class="acm-widget-card" <?php echo $card_style; ?>>
+            <?php echo $image_html; // Insertar imagen ?>
             <div class="acm-value acm-anim-<?php echo esc_attr( $anim ); ?>" <?php echo $value_style; ?> <?php echo $data_attr; ?>>
                 <?php echo $final_output; ?>
             </div>

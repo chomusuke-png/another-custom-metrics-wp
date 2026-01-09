@@ -1,6 +1,6 @@
 /**
  * ACM Script
- * Maneja animaciones: Count Up, Slot Machine, Blur, Bounce.
+ * Maneja animaciones, upload de imágenes y vista previa en admin.
  */
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- ANIMACIONES (Sin cambios en lógica interna) ---
+    // --- ANIMACIONES (Sin cambios) ---
     const animateSlotMachine = (element, finalString, duration) => {
         element.innerHTML = '';
         element.style.display = 'inline-flex';
@@ -49,32 +49,24 @@ document.addEventListener('DOMContentLoaded', () => {
             const wrapper = document.createElement('span');
             wrapper.style.display = 'inline-block';
             wrapper.style.lineHeight = '1.2em';
-            
             if (/\d/.test(char)) {
                 const digit = parseInt(char, 10);
                 const column = document.createElement('span');
                 column.style.display = 'flex';
                 column.style.flexDirection = 'column';
                 column.style.transition = `transform ${duration}ms cubic-bezier(0.1, 0.7, 0.1, 1)`;
-                
                 let content = '';
-                for(let i=0; i<=digit; i++) {
-                    content += `<span>${i}</span>`;
-                }
+                for(let i=0; i<=digit; i++) { content += `<span>${i}</span>`; }
                 column.innerHTML = content;
                 wrapper.appendChild(column);
                 element.appendChild(wrapper);
-
-                requestAnimationFrame(() => {
-                    column.style.transform = `translateY(-${digit * 1.2}em)`;
-                });
+                requestAnimationFrame(() => { column.style.transform = `translateY(-${digit * 1.2}em)`; });
             } else {
                 wrapper.textContent = char;
                 element.appendChild(wrapper);
             }
         });
     };
-
     const animateCountUp = (element, rawTarget, format, decimals, prefix, suffix, duration) => {
         const startTime = performance.now();
         const step = (currentTime) => {
@@ -83,23 +75,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const ease = 1 - Math.pow(1 - progress, 4);
             const currentVal = rawTarget * ease;
             element.textContent = prefix + formatNumberOnly(currentVal, format, decimals) + suffix;
-
-            if (progress < 1) {
-                requestAnimationFrame(step);
-            } else {
-                element.textContent = prefix + formatNumberOnly(rawTarget, format, decimals) + suffix;
-            }
+            if (progress < 1) { requestAnimationFrame(step); } 
+            else { element.textContent = prefix + formatNumberOnly(rawTarget, format, decimals) + suffix; }
         };
         requestAnimationFrame(step);
     };
-
     const animateCssEffect = (element, rawTarget, format, decimals, prefix, suffix, effectClass) => {
         element.textContent = prefix + formatNumberOnly(rawTarget, format, decimals) + suffix;
         element.classList.remove(effectClass);
         void element.offsetWidth;
         element.classList.add(effectClass);
     };
-
     const startAnimation = (element) => {
         const rawTarget = parseFloat(element.getAttribute('data-acm-value'));
         const format    = element.getAttribute('data-acm-format');
@@ -110,12 +96,9 @@ document.addEventListener('DOMContentLoaded', () => {
         let durationSec = parseFloat(element.getAttribute('data-acm-duration'));
         if (isNaN(durationSec)) durationSec = 2.5;
         const duration = durationSec * 1000;
-
         if (isNaN(rawTarget) || format === 'date') return;
-
         element.classList.remove('acm-effect-blur', 'acm-effect-bounce');
         element.style.display = '';
-
         if (animType === 'slot') {
             const finalStr = prefix + formatNumberOnly(rawTarget, format, decimals) + suffix;
             animateSlotMachine(element, finalStr, duration);
@@ -127,7 +110,6 @@ document.addEventListener('DOMContentLoaded', () => {
             animateCountUp(element, rawTarget, format, decimals, prefix, suffix, duration);
         }
     };
-
     const observer = new IntersectionObserver((entries, observer) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -136,13 +118,79 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }, { threshold: 0.1 });
-
     document.querySelectorAll('.acm-value').forEach(el => observer.observe(el));
 
 
-    // --- PREVIEW ADMIN (ACTUALIZADO CON COLORES) ---
+    // --- GESTIÓN DE METABOX EN ADMIN ---
     const previewContainer = document.getElementById('acm-admin-preview');
     if (previewContainer) {
+        
+        // 1. MANEJO DE UPLOAD DE IMAGEN (WordPress Media)
+        const uploadBtn = document.getElementById('acm_upload_image_btn');
+        const removeBtn = document.getElementById('acm_remove_image_btn');
+        const hiddenInput = document.getElementById('acm_image_id');
+        const previewImg = document.getElementById('acm_image_preview_tag');
+        const wrapper = document.getElementById('acm_image_wrapper');
+        let mediaFrame;
+
+        if (uploadBtn) {
+            uploadBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (mediaFrame) { mediaFrame.open(); return; }
+                
+                mediaFrame = wp.media({
+                    title: 'Seleccionar Icono o Imagen',
+                    button: { text: 'Usar esta imagen' },
+                    multiple: false
+                });
+
+                mediaFrame.on('select', () => {
+                    const attachment = mediaFrame.state().get('selection').first().toJSON();
+                    hiddenInput.value = attachment.id;
+                    previewImg.src = attachment.url;
+                    wrapper.style.display = 'block';
+                    removeBtn.style.display = 'inline-block';
+                    uploadBtn.textContent = 'Cambiar Imagen';
+                    
+                    updatePreview(); // Actualizar preview general
+                });
+
+                mediaFrame.open();
+            });
+
+            removeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                hiddenInput.value = '';
+                previewImg.src = '';
+                wrapper.style.display = 'none';
+                removeBtn.style.display = 'none';
+                uploadBtn.textContent = 'Subir Imagen';
+                
+                updatePreview();
+            });
+        }
+
+        // 2. MANEJO DE RESET DE COLORES
+        const resetBtn = document.getElementById('acm_reset_colors');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                // Valores por defecto
+                const defAccent = '#0073aa';
+                const defBg     = '#ffffff';
+                const defBorder = '#e5e5e5';
+
+                // Asignar
+                document.getElementById('acm_color').value = defAccent;
+                document.getElementById('acm_bg_color').value = defBg;
+                document.getElementById('acm_border_color').value = defBorder;
+
+                // Forzar evento input para actualizar la preview
+                updatePreview();
+            });
+        }
+
+        // 3. ACTUALIZAR VISTA PREVIA
         const updatePreview = () => {
             const val         = document.getElementById('acm_value').value;
             const label       = document.getElementById('acm_label').value;
@@ -153,10 +201,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const duration    = document.getElementById('acm_duration').value || 2.5;
             const anim        = document.getElementById('acm_anim').value;
             
-            // Colores
             const accentColor = document.getElementById('acm_color').value;
             const bgColor     = document.getElementById('acm_bg_color').value;
             const borderColor = document.getElementById('acm_border_color').value;
+
+            // Obtener imagen actual de la caja de configuración (si existe)
+            const imgSrc = previewImg && wrapper.style.display !== 'none' ? previewImg.src : '';
+            const imgHtml = imgSrc ? `<img class="acm-icon" src="${imgSrc}" style="max-width:80px; margin-bottom:10px;">` : '';
 
             let isNumeric = !isNaN(parseFloat(val)) && format !== 'date';
             let dataAttrs = '';
@@ -173,17 +224,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
             }
 
-            // Estilos dinámicos para la vista previa
             const valueStyle = accentColor ? `style="color: ${accentColor}; border-color: ${accentColor};"` : '';
-            
-            // Estilo tarjeta
             let cardStyle = 'margin:0;';
             if(bgColor) cardStyle += `background-color: ${bgColor};`;
             if(borderColor) cardStyle += `border-color: ${borderColor};`;
 
-            // HTML base
+            // HTML simulado
             let html = `
                 <div class="acm-widget-card" style="${cardStyle}">
+                    ${imgHtml}
                     <div class="acm-value" ${valueStyle} ${dataAttrs}>
                         ${prefix}${val}${suffix} 
                     </div>
@@ -210,6 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 el.addEventListener('change', updatePreview);
             }
         });
+        // Ejecutar una vez al inicio
         updatePreview();
     }
 });

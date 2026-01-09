@@ -1,5 +1,4 @@
 <?php
-
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
@@ -26,11 +25,13 @@ class ACM_Metabox {
         $metric_suffix       = get_post_meta( $post->ID, '_acm_suffix', true );
         $metric_duration     = get_post_meta( $post->ID, '_acm_duration', true );
         $metric_anim         = get_post_meta( $post->ID, '_acm_anim', true );
+        $metric_color        = get_post_meta( $post->ID, '_acm_color', true );
+        $metric_bg_color     = get_post_meta( $post->ID, '_acm_bg_color', true );
+        $metric_border_color = get_post_meta( $post->ID, '_acm_border_color', true );
         
-        // Colores
-        $metric_color        = get_post_meta( $post->ID, '_acm_color', true ); // Acento
-        $metric_bg_color     = get_post_meta( $post->ID, '_acm_bg_color', true ); // Fondo
-        $metric_border_color = get_post_meta( $post->ID, '_acm_border_color', true ); // Borde
+        // Imagen (ID)
+        $metric_image_id     = get_post_meta( $post->ID, '_acm_image_id', true );
+        $image_url           = $metric_image_id ? wp_get_attachment_image_url( $metric_image_id, 'medium' ) : '';
 
         // Defaults
         if ( empty( $metric_format ) ) { $metric_format = 'raw'; }
@@ -42,6 +43,21 @@ class ACM_Metabox {
         ?>
         <div class="acm-metabox-wrapper" style="display: grid; gap: 15px;">
             
+            <div style="background: #f9f9f9; padding: 15px; border: 1px solid #ddd; border-radius: 4px;">
+                <p style="margin-top:0;"><strong>Imagen / Icono Superior:</strong></p>
+                
+                <div id="acm_image_wrapper" style="margin-bottom: 10px; text-align: center; min-height: 50px; display: <?php echo $image_url ? 'block' : 'none'; ?>;">
+                    <img id="acm_image_preview_tag" src="<?php echo esc_url( $image_url ); ?>" style="max-width: 100px; max-height: 100px; display: block; margin: 0 auto;">
+                </div>
+
+                <input type="hidden" id="acm_image_id" name="acm_image_id" value="<?php echo esc_attr( $metric_image_id ); ?>">
+                
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button type="button" class="button" id="acm_upload_image_btn"><?php echo $image_url ? 'Cambiar Imagen' : 'Subir Imagen'; ?></button>
+                    <button type="button" class="button button-link-delete" id="acm_remove_image_btn" style="<?php echo $image_url ? '' : 'display:none;'; ?>">Quitar</button>
+                </div>
+            </div>
+
             <p>
                 <label for="acm_value"><strong>Valor de la Métrica:</strong></label><br>
                 <input type="text" id="acm_value" name="acm_value" value="<?php echo esc_attr( $metric_value ); ?>" style="width: 100%;" placeholder="Ej: 1500">
@@ -101,18 +117,22 @@ class ACM_Metabox {
 
             <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;">
 
-            <p><strong>Apariencia de la Tarjeta:</strong></p>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <strong>Apariencia:</strong>
+                <button type="button" id="acm_reset_colors" class="button button-small">Restablecer Colores</button>
+            </div>
+            
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
                 <p style="margin: 0;">
-                    <label for="acm_color">Acento (Texto/Valor):</label><br>
+                    <label for="acm_color">Acento:</label><br>
                     <input type="color" id="acm_color" name="acm_color" value="<?php echo esc_attr( $metric_color ? $metric_color : '#0073aa' ); ?>" style="width: 100%; height: 40px;">
                 </p>
                 <p style="margin: 0;">
-                    <label for="acm_bg_color">Fondo (Card):</label><br>
+                    <label for="acm_bg_color">Fondo:</label><br>
                     <input type="color" id="acm_bg_color" name="acm_bg_color" value="<?php echo esc_attr( $metric_bg_color ? $metric_bg_color : '#ffffff' ); ?>" style="width: 100%; height: 40px;">
                 </p>
                 <p style="margin: 0;">
-                    <label for="acm_border_color">Borde (Card):</label><br>
+                    <label for="acm_border_color">Borde:</label><br>
                     <input type="color" id="acm_border_color" name="acm_border_color" value="<?php echo esc_attr( $metric_border_color ? $metric_border_color : '#e5e5e5' ); ?>" style="width: 100%; height: 40px;">
                 </p>
             </div>
@@ -150,14 +170,19 @@ class ACM_Metabox {
             '_acm_suffix'       => 'sanitize_text_field',
             '_acm_duration'     => 'sanitize_text_field',
             '_acm_anim'         => 'sanitize_key',
-            '_acm_bg_color'     => 'sanitize_hex_color', // Nuevo
-            '_acm_border_color' => 'sanitize_hex_color', // Nuevo
+            '_acm_bg_color'     => 'sanitize_hex_color',
+            '_acm_border_color' => 'sanitize_hex_color',
+            '_acm_image_id'     => 'intval',
         ];
 
         foreach ( $fields as $key => $sanitizer ) {
-            $input_name = substr( $key, 1 ); // _acm_value -> acm_value
+            $input_name = substr( $key, 1 ); 
             if ( isset( $_POST[ $input_name ] ) ) {
                 update_post_meta( $post_id, $key, call_user_func( $sanitizer, $_POST[ $input_name ] ) );
+            } else {
+                if ( $input_name === 'acm_image_id' && empty($_POST['acm_image_id']) ) {
+                    delete_post_meta( $post_id, $key );
+                }
             }
         }
     }
