@@ -14,9 +14,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'ACM_PATH', plugin_dir_path( __FILE__ ) );
 define( 'ACM_URL', plugin_dir_url( __FILE__ ) );
 
+require_once ACM_PATH . 'includes/class-utils.php';
 require_once ACM_PATH . 'includes/class-cpt.php';
 require_once ACM_PATH . 'includes/class-metabox.php';
 require_once ACM_PATH . 'includes/class-shortcode.php';
+require_once ACM_PATH . 'includes/class-ajax.php';
 
 class ACM_Init {
 
@@ -24,6 +26,7 @@ class ACM_Init {
         new ACM_CPT();
         new ACM_Metabox();
         new ACM_Shortcode();
+        new ACM_Ajax();
 
         add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_frontend_assets' ] );
         add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_assets' ] );

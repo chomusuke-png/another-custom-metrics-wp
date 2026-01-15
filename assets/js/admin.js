@@ -65,81 +65,84 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- 3. VISTA PREVIA EN TIEMPO REAL ---
-    const updatePreview = () => {
-        // Recoger datos
-        const val         = document.getElementById('acm_value').value;
-        const label       = document.getElementById('acm_label').value;
-        const format      = document.getElementById('acm_format').value;
-        const decimals    = document.getElementById('acm_decimals').value || 0;
-        const prefix      = document.getElementById('acm_prefix').value;
-        const suffix      = document.getElementById('acm_suffix').value;
-        const duration    = document.getElementById('acm_duration').value || 2.5;
-        const anim        = document.getElementById('acm_anim').value;
-        
-        // Colores
-        const accentColor = document.getElementById('acm_color').value;
-        const bgColor     = document.getElementById('acm_bg_color').value;
-        const borderColor = document.getElementById('acm_border_color').value;
-
-        // Imagen
-        const imgSrc = (previewImg && wrapper.style.display !== 'none') ? previewImg.src : '';
-        const imgHtml = imgSrc ? `<img class="acm-icon" src="${imgSrc}" style="max-width:80px; margin-bottom:10px;">` : '';
-
-        // Construir atributos data
-        let isNumeric = !isNaN(parseFloat(val)) && format !== 'date';
-        let dataAttrs = '';
-
-        if (isNumeric) {
-            dataAttrs = `
-                data-acm-value="${val}" 
-                data-acm-format="${format}" 
-                data-acm-decimals="${decimals}" 
-                data-acm-prefix="${prefix}" 
-                data-acm-suffix="${suffix}"
-                data-acm-duration="${duration}"
-                data-acm-anim="${anim}"
-            `;
-        }
-
-        // Estilos
-        const valueStyle = accentColor ? `style="color: ${accentColor}; border-color: ${accentColor};"` : '';
-        let cardStyle = 'margin:0;';
-        if(bgColor) cardStyle += `background-color: ${bgColor};`;
-        if(borderColor) cardStyle += `border-color: ${borderColor};`;
-
-        // Render HTML
-        let html = `
-            <div class="acm-widget-card" style="${cardStyle}">
-                ${imgHtml}
-                <div class="acm-value" ${valueStyle} ${dataAttrs}>
-                    ${prefix}${val}${suffix} 
-                </div>
-                <div class="acm-label">${label}</div>
-            </div>
-        `;
-        previewContainer.innerHTML = html;
-
-        // Ejecutar animación usando el Core
-        if (isNumeric && window.ACM) {
-            window.ACM.startAnimation(previewContainer.querySelector('.acm-value'));
-        }
+    // --- DEBOUNCE FUNCTION ---
+    // Para no saturar el servidor con cada tecla pulsada
+    const debounce = (func, wait) => {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
     };
 
-    // Listeners para actualización en vivo
-    const inputs = [
+    // --- VISTA PREVIA VIA AJAX ---
+    const updatePreview = () => {
+        // 1. Recoger datos del formulario
+        // Un truco rápido es usar FormData con un form ficticio o seleccionar inputs
+        // Dado que los inputs están dispersos, vamos a seleccionarlos manualmente o envolver el metabox en un form (pero ya estamos dentro de un form #post).
+        // Lo mejor es construir un FormData manual con los IDs que ya conoces.
+        
+        const formData = new FormData();
+        formData.append('action', 'acm_render_preview');
+        
+        const inputs = [
+            'acm_value', 'acm_label', 'acm_format', 'acm_decimals', 
+            'acm_prefix', 'acm_suffix', 'acm_duration', 'acm_anim',
+            'acm_color', 'acm_bg_color', 'acm_border_color', 'acm_image_id'
+        ];
+
+        inputs.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) formData.append(id, el.value);
+        });
+
+        // Indicador de carga
+        previewContainer.style.opacity = '0.5';
+
+        // 2. Fetch
+        fetch(ajaxurl, { // 'ajaxurl' es global en admin de WP
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                previewContainer.innerHTML = data.data;
+                // Reiniciar animación
+                const newVal = previewContainer.querySelector('.acm-value');
+                if(newVal && window.ACM) {
+                    window.ACM.startAnimation(newVal);
+                }
+            }
+        })
+        .finally(() => {
+            previewContainer.style.opacity = '1';
+        });
+    };
+
+    const debouncedUpdate = debounce(updatePreview, 500); // Espera 500ms tras dejar de escribir
+
+    // Listeners
+    const inputsIds = [
         'acm_value', 'acm_label', 'acm_format', 'acm_decimals', 
         'acm_prefix', 'acm_suffix', 'acm_duration', 'acm_anim',
         'acm_color', 'acm_bg_color', 'acm_border_color'
     ];
     
-    inputs.forEach(id => {
+    inputsIds.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
-            el.addEventListener('input', updatePreview);
-            el.addEventListener('change', updatePreview);
+            el.addEventListener('input', debouncedUpdate);
+            el.addEventListener('change', updatePreview); // Change directo para selects/color
         }
     });
+
+    // Para la imagen, trigger manual cuando se selecciona
+    // (Añade updatePreview() dentro del callback del mediaFrame.on('select') que tienes arriba)
 
     // Inicializar
     updatePreview();

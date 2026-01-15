@@ -1,8 +1,5 @@
 <?php
-
-if ( ! defined( 'ABSPATH' ) ) {
-    exit;
-}
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 class ACM_Shortcode {
 
@@ -16,29 +13,24 @@ class ACM_Shortcode {
 
         if ( ! $post_id || get_post_type( $post_id ) !== 'acm_widget' ) return '';
 
-        // Datos principales
+        // Recuperar Meta
         $raw_value = get_post_meta( $post_id, '_acm_value', true );
         $label     = get_post_meta( $post_id, '_acm_label', true );
         $format    = get_post_meta( $post_id, '_acm_format', true );
         $prefix    = get_post_meta( $post_id, '_acm_prefix', true );
         $suffix    = get_post_meta( $post_id, '_acm_suffix', true );
-        
         $decimals  = get_post_meta( $post_id, '_acm_decimals', true );
         if ( $decimals === '' ) $decimals = 0;
         $decimals = intval( $decimals );
-        
         $duration  = get_post_meta( $post_id, '_acm_duration', true );
         if ( empty( $duration ) ) $duration = 2.5;
-
         $anim = get_post_meta( $post_id, '_acm_anim', true );
         if ( empty( $anim ) ) $anim = 'count';
 
-        // Colores
         $color        = get_post_meta( $post_id, '_acm_color', true ); 
         $bg_color     = get_post_meta( $post_id, '_acm_bg_color', true ); 
         $border_color = get_post_meta( $post_id, '_acm_border_color', true );
 
-        // Imagen
         $image_id     = get_post_meta( $post_id, '_acm_image_id', true );
         $image_html   = '';
         if ( $image_id ) {
@@ -48,13 +40,12 @@ class ACM_Shortcode {
             }
         }
 
-        // Render PHP inicial
-        $formatted_number = $this->format_metric( $raw_value, $format, $decimals );
+        // Lógica compartida
+        $formatted_number = ACM_Utils::format_metric( $raw_value, $format, $decimals );
         $final_output     = esc_html( $prefix ) . $formatted_number . esc_html( $suffix );
 
         // Estilos
         $value_style = $color ? "style='color: {$color}; border-color: {$color};'" : '';
-        
         $card_style_arr = [];
         if ( $bg_color ) { $card_style_arr[] = "background-color: {$bg_color};"; }
         if ( $border_color ) { $card_style_arr[] = "border-color: {$border_color};"; }
@@ -73,53 +64,7 @@ class ACM_Shortcode {
         }
 
         ob_start();
-        ?>
-        <div class="acm-widget-card" <?php echo $card_style; ?>>
-            <?php echo $image_html; // Insertar imagen ?>
-            <div class="acm-value acm-anim-<?php echo esc_attr( $anim ); ?>" <?php echo $value_style; ?> <?php echo $data_attr; ?>>
-                <?php echo $final_output; ?>
-            </div>
-            <div class="acm-label">
-                <?php echo esc_html( $label ); ?>
-            </div>
-        </div>
-        <?php
+        include ACM_PATH . 'templates/public/metric.php';
         return ob_get_clean();
-    }
-
-    private function format_metric( $value, $format, $decimals = 0 ) {
-        if ( empty( $value ) && $value !== '0' ) return $value;
-
-        switch ( $format ) {
-            case 'number': return number_format_i18n( (float) $value, $decimals );
-            case 'money': return '$ ' . number_format_i18n( (float) $value, $decimals );
-            case 'percent': return number_format_i18n( (float) $value, $decimals ) . '%';
-            case 'compact': return $this->format_compact_number( (float) $value, $decimals );
-            case 'money_compact': return '$ ' . $this->format_compact_number( (float) $value, $decimals );
-            case 'weight': return $this->format_weight( (float) $value, $decimals );
-            case 'date': 
-                $timestamp = strtotime( $value );
-                return $timestamp ? date_i18n( get_option( 'date_format' ), $timestamp ) : $value;
-            case 'raw':
-            default: return $value;
-        }
-    }
-
-    private function format_compact_number( $n, $decimals ) {
-        if ( $n < 1000 ) return number_format_i18n( $n, $decimals );
-        $suffix = [ '', 'k', 'M', 'B', 'T' ];
-        $power  = floor( log( $n, 1000 ) );
-        if ( $power >= count( $suffix ) ) $power = count( $suffix ) - 1;
-        return number_format_i18n( round( $n / pow( 1000, $power ), $decimals ), $decimals ) . $suffix[ $power ];
-    }
-
-    private function format_weight( $g, $decimals ) {
-        $suffixes = [ 'g', 'kg', 't' ];
-        if ( $g <= 0 ) return '0 g';
-        $power = floor( log( $g, 1000 ) );
-        if ( $power >= count( $suffixes ) ) $power = count( $suffixes ) - 1;
-        if ( $power < 0 ) $power = 0;
-        $number = $g / pow( 1000, $power );
-        return number_format_i18n( round( $number, $decimals ), $decimals ) . ' ' . $suffixes[ $power ];
     }
 }
