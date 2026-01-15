@@ -13,10 +13,13 @@ class ACM_Shortcode {
 
         if ( ! $post_id || get_post_type( $post_id ) !== 'acm_widget' ) return '';
 
-        // Recuperar Meta
+        // Metas
         $raw_value = get_post_meta( $post_id, '_acm_value', true );
         $label     = get_post_meta( $post_id, '_acm_label', true );
         $url       = get_post_meta( $post_id, '_acm_url', true );
+        $layout    = get_post_meta( $post_id, '_acm_layout', true ); // NUEVO
+        if ( empty( $layout ) ) $layout = 'top';
+
         $format    = get_post_meta( $post_id, '_acm_format', true );
         $prefix    = get_post_meta( $post_id, '_acm_prefix', true );
         $suffix    = get_post_meta( $post_id, '_acm_suffix', true );
@@ -41,18 +44,18 @@ class ACM_Shortcode {
             }
         }
 
-        // Lógica compartida
         $formatted_number = ACM_Utils::format_metric( $raw_value, $format, $decimals );
         $final_output     = esc_html( $prefix ) . $formatted_number . esc_html( $suffix );
 
-        // Estilos
         $value_style = $color ? "style='color: {$color}; border-color: {$color};'" : '';
         $card_style_arr = [];
         if ( $bg_color ) { $card_style_arr[] = "background-color: {$bg_color};"; }
         if ( $border_color ) { $card_style_arr[] = "border-color: {$border_color};"; }
         $card_style = ! empty( $card_style_arr ) ? 'style="' . implode( ' ', $card_style_arr ) . '"' : '';
 
-        // Data attributes
+        // Layout class
+        $layout_class = 'acm-layout-' . esc_attr( $layout );
+
         $data_attr = '';
         if ( $format !== 'date' && is_numeric( $raw_value ) ) {
             $data_attr  = 'data-acm-value="' . esc_attr( $raw_value ) . '" ';

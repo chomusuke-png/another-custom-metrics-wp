@@ -1,79 +1,88 @@
-/* Contenedor principal de la tarjeta */
+/* Contenedor principal */
 .acm-widget-card {
     background: #ffffff;
     padding: 20px;
-    text-align: center;
-    transition: transform 0.2s ease;
-    max-width: 1200px;
     border: 1px solid #e5e5e5;
     border-radius: 8px;
+    transition: transform 0.2s ease;
+    max-width: 1200px;
+    
+    /* --- FLEXBOX SYSTEM --- */
+    display: flex;
+    align-items: center;     /* Centrado verticalmente entre icono y texto */
+    justify-content: center; /* Centrado horizontal del bloque */
+    gap: 15px;               /* Espacio entre el icono y el texto */
+    flex-direction: column;  /* Por defecto: Arriba (Columna) */
+    text-align: center;      /* Por defecto: Centrado */
 }
 
-/* Imagen / Icono Superior */
+/* Reset de imagen: Quitamos márgenes viejos porque ahora usamos 'gap' */
 .acm-icon {
     display: block;
-    margin: 0 auto 10px auto;
     max-width: 80px;
     height: auto;
+    margin: 0; 
 }
 
-/* Valor grande de la estadística */
+/* Contenedor de Textos (Valor + Etiqueta) */
+.acm-content {
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- VARIACIONES DE ALINEACIÓN --- */
+
+/* 1. Izquierda (Icono a la izquierda, texto a la derecha) */
+.acm-layout-left {
+    flex-direction: row;
+    text-align: left;
+    justify-content: flex-start; /* Opcional: para que no se centre si la tarjeta es ancha */
+}
+
+/* 2. Derecha (Icono a la derecha, texto a la izquierda) */
+.acm-layout-right {
+    flex-direction: row-reverse;
+    text-align: right;
+    justify-content: flex-end;
+}
+
+/* 3. Abajo (Icono abajo, texto arriba) */
+.acm-layout-bottom {
+    flex-direction: column-reverse;
+}
+
+/* 4. Arriba (Default, explícito) */
+.acm-layout-top {
+    flex-direction: column;
+}
+
+/* Estilos de Texto */
 .acm-value {
     font-size: 3rem;
     font-weight: 700;
-    line-height: 1.2;
-    margin-bottom: 10px;
-    border-bottom: 3px solid transparent;
+    line-height: 1.1;
     display: inline-block;
-    position: relative; 
 }
 
-/* Etiqueta descriptiva */
 .acm-label {
     font-size: 1rem;
     color: #666;
     text-transform: uppercase;
     letter-spacing: 1px;
     font-weight: 500;
+    margin-top: 5px;
 }
 
 /* --- ANIMACIONES --- */
-
-/* 1. BLUR REVEAL */
-.acm-effect-blur {
-    animation: acmBlurIn 1.5s ease-out forwards;
-}
-
+.acm-effect-blur { animation: acmBlurIn 1.5s ease-out forwards; }
 @keyframes acmBlurIn {
-    0% {
-        opacity: 0;
-        filter: blur(20px);
-        transform: scale(0.9);
-    }
-    100% {
-        opacity: 1;
-        filter: blur(0);
-        transform: scale(1);
-    }
+    0% { opacity: 0; filter: blur(20px); transform: scale(0.9); }
+    100% { opacity: 1; filter: blur(0); transform: scale(1); }
 }
 
-/* 2. BOUNCE / ZOOM */
-.acm-effect-bounce {
-    animation: acmBounceIn 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
-}
-
+.acm-effect-bounce { animation: acmBounceIn 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards; }
 @keyframes acmBounceIn {
-    0% {
-        opacity: 0;
-        transform: scale(0.3);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1);
-    }
+    0% { opacity: 0; transform: scale(0.3); }
+    100% { opacity: 1; transform: scale(1); }
 }
-
-/* 3. SLOT MACHINE UTILS */
-.acm-value span {
-    text-align: center;
-}
+.acm-value span { text-align: center; }

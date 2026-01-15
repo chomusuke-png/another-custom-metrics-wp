@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const previewContainer = document.getElementById('acm-admin-preview');
     if (!previewContainer) return;
 
-    // --- 1. GESTIÓN DE IMAGEN --- (Se mantiene igual)
+    // --- 1. GESTIÓN DE IMAGEN ---
     const uploadBtn = document.getElementById('acm_upload_image_btn');
     const removeBtn = document.getElementById('acm_remove_image_btn');
     const hiddenInput = document.getElementById('acm_image_id');
@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- 2. RESET DE COLORES --- (Se mantiene igual)
+    // --- 2. RESET DE COLORES ---
     const resetBtn = document.getElementById('acm_reset_colors');
     if (resetBtn) {
         resetBtn.addEventListener('click', (e) => {
@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- DEBOUNCE FUNCTION ---
+    // --- DEBOUNCE ---
     const debounce = (func, wait) => {
         let timeout;
         return function executedFunction(...args) {
@@ -72,11 +72,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const formData = new FormData();
         formData.append('action', 'acm_render_preview');
         
-        // !!! AÑADIDO: 'acm_url' a la lista de inputs !!!
+        // !!! AÑADIDO: 'acm_layout' !!!
         const inputs = [
-            'acm_value', 'acm_label', 'acm_url', 'acm_format', 'acm_decimals', 
-            'acm_prefix', 'acm_suffix', 'acm_duration', 'acm_anim',
-            'acm_color', 'acm_bg_color', 'acm_border_color', 'acm_image_id'
+            'acm_value', 'acm_label', 'acm_url', 'acm_layout', 
+            'acm_format', 'acm_decimals', 'acm_prefix', 'acm_suffix', 
+            'acm_duration', 'acm_anim', 'acm_color', 'acm_bg_color', 
+            'acm_border_color', 'acm_image_id'
         ];
 
         inputs.forEach(id => {
@@ -108,11 +109,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const debouncedUpdate = debounce(updatePreview, 500);
 
     // Listeners
-    // !!! AÑADIDO: 'acm_url' a la lista de listeners !!!
+    // !!! AÑADIDO: 'acm_layout' !!!
     const inputsIds = [
-        'acm_value', 'acm_label', 'acm_url', 'acm_format', 'acm_decimals', 
-        'acm_prefix', 'acm_suffix', 'acm_duration', 'acm_anim',
-        'acm_color', 'acm_bg_color', 'acm_border_color'
+        'acm_value', 'acm_label', 'acm_url', 'acm_layout',
+        'acm_format', 'acm_decimals', 'acm_prefix', 'acm_suffix', 
+        'acm_duration', 'acm_anim', 'acm_color', 'acm_bg_color', 
+        'acm_border_color'
     ];
     
     inputsIds.forEach(id => {

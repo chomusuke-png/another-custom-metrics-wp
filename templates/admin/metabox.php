@@ -1,11 +1,11 @@
 <?php
-// Variables disponibles: $metric_value, $metric_label, etc... (Pasadas desde el Controller)
+// Variables disponibles: $metric_value, ... $metric_layout
 wp_nonce_field('acm_save_metabox_data', 'acm_metabox_nonce');
 ?>
 <div class="acm-metabox-wrapper" style="display: grid; gap: 15px;">
 
     <div style="background: #f9f9f9; padding: 15px; border: 1px solid #ddd; border-radius: 4px;">
-        <p style="margin-top:0;"><strong>Imagen / Icono Superior:</strong></p>
+        <p style="margin-top:0;"><strong>Imagen / Icono:</strong></p>
         <div id="acm_image_wrapper" style="margin-bottom: 10px; text-align: center; min-height: 50px; display: <?php echo $image_url ? 'block' : 'none'; ?>;">
             <img id="acm_image_preview_tag" src="<?php echo esc_url($image_url); ?>" style="max-width: 100px; max-height: 100px; display: block; margin: 0 auto;">
         </div>
@@ -21,6 +21,15 @@ wp_nonce_field('acm_save_metabox_data', 'acm_metabox_nonce');
         <input type="text" id="acm_value" name="acm_value" value="<?php echo esc_attr($metric_value); ?>" style="width: 100%;" placeholder="Ej: 1500">
     </p>
 
+    <p>
+        <label for="acm_layout"><strong>Disposición / Alineación:</strong></label><br>
+        <select id="acm_layout" name="acm_layout" style="width: 100%;">
+            <option value="top" <?php selected($metric_layout, 'top'); ?>>Icono Arriba (Centro)</option>
+            <option value="left" <?php selected($metric_layout, 'left'); ?>>Icono Izquierda (Horizontal)</option>
+            <option value="right" <?php selected($metric_layout, 'right'); ?>>Icono Derecha (Horizontal)</option>
+            <option value="bottom" <?php selected($metric_layout, 'bottom'); ?>>Icono Abajo (Centro)</option>
+        </select>
+    </p>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
         <p style="margin: 0;">
             <label for="acm_prefix"><strong>Prefijo:</strong></label><br>
@@ -76,10 +85,10 @@ wp_nonce_field('acm_save_metabox_data', 'acm_metabox_nonce');
     <p>
         <label for="acm_url"><strong>URL de Destino (Opcional):</strong></label><br>
         <input type="url" id="acm_url" name="acm_url" value="<?php echo esc_attr($metric_url); ?>" style="width: 100%;" placeholder="https://...">
-        <span class="description" style="font-size: 12px; color: #666;">Si se completa, la tarjeta será un enlace.</span>
     </p>
-    <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;">
 
+    <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;">
+    
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
         <strong>Apariencia:</strong>
         <button type="button" id="acm_reset_colors" class="button button-small">Restablecer Colores</button>

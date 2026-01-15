@@ -12,10 +12,12 @@ class ACM_Ajax {
             wp_send_json_error( 'No permission' );
         }
 
-        // Recoger datos del POST
+        // Datos del POST
         $raw_value = isset($_POST['acm_value']) ? sanitize_text_field($_POST['acm_value']) : '';
         $label     = isset($_POST['acm_label']) ? sanitize_text_field($_POST['acm_label']) : '';
-        $url       = isset($_POST['acm_url']) ? esc_url_raw($_POST['acm_url']) : ''; // --- NUEVO ---
+        $url       = isset($_POST['acm_url']) ? esc_url_raw($_POST['acm_url']) : '';
+        $layout    = isset($_POST['acm_layout']) ? sanitize_key($_POST['acm_layout']) : 'top'; // NUEVO
+        
         $format    = isset($_POST['acm_format']) ? sanitize_key($_POST['acm_format']) : 'raw';
         $prefix    = isset($_POST['acm_prefix']) ? sanitize_text_field($_POST['acm_prefix']) : '';
         $suffix    = isset($_POST['acm_suffix']) ? sanitize_text_field($_POST['acm_suffix']) : '';
@@ -44,6 +46,9 @@ class ACM_Ajax {
         if ( $bg_color ) { $card_style_arr[] = "background-color: {$bg_color};"; }
         if ( $border_color ) { $card_style_arr[] = "border-color: {$border_color};"; }
         $card_style = ! empty( $card_style_arr ) ? 'style="' . implode( ' ', $card_style_arr ) . '"' : '';
+
+        // Layout class
+        $layout_class = 'acm-layout-' . esc_attr( $layout );
 
         $data_attr = '';
         if ( $format !== 'date' && is_numeric( $raw_value ) ) {
