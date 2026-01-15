@@ -20,7 +20,7 @@ class ACM_Metabox {
         $metric_value        = get_post_meta( $post->ID, '_acm_value', true );
         $metric_label        = get_post_meta( $post->ID, '_acm_label', true );
         $metric_url          = get_post_meta( $post->ID, '_acm_url', true );
-        $metric_layout       = get_post_meta( $post->ID, '_acm_layout', true ); // NUEVO
+        $metric_layout       = get_post_meta( $post->ID, '_acm_layout', true );
         
         $metric_format       = get_post_meta( $post->ID, '_acm_format', true );
         $metric_decimals     = get_post_meta( $post->ID, '_acm_decimals', true );
@@ -32,7 +32,9 @@ class ACM_Metabox {
         $metric_bg_color     = get_post_meta( $post->ID, '_acm_bg_color', true );
         $metric_border_color = get_post_meta( $post->ID, '_acm_border_color', true );
         
+        // Imagen e Imagen Width
         $metric_image_id     = get_post_meta( $post->ID, '_acm_image_id', true );
+        $metric_img_width    = get_post_meta( $post->ID, '_acm_img_width', true ); // NUEVO
         $image_url           = $metric_image_id ? wp_get_attachment_image_url( $metric_image_id, 'medium' ) : '';
 
         // Defaults
@@ -40,7 +42,8 @@ class ACM_Metabox {
         if ( $metric_decimals === '' ) { $metric_decimals = '0'; }
         if ( empty( $metric_duration ) ) { $metric_duration = '2.5'; }
         if ( empty( $metric_anim ) ) { $metric_anim = 'count'; }
-        if ( empty( $metric_layout ) ) { $metric_layout = 'top'; } // Default
+        if ( empty( $metric_layout ) ) { $metric_layout = 'top'; }
+        if ( empty( $metric_img_width ) ) { $metric_img_width = '80'; } // Default 80px
 
         include ACM_PATH . 'templates/admin/metabox.php';
     }
@@ -65,7 +68,7 @@ class ACM_Metabox {
             '_acm_value'        => 'sanitize_text_field',
             '_acm_label'        => 'sanitize_text_field',
             '_acm_url'          => 'esc_url_raw',
-            '_acm_layout'       => 'sanitize_key', // NUEVO
+            '_acm_layout'       => 'sanitize_key',
             '_acm_color'        => 'sanitize_hex_color',
             '_acm_format'       => 'sanitize_key',
             '_acm_decimals'     => 'intval',
@@ -76,6 +79,7 @@ class ACM_Metabox {
             '_acm_bg_color'     => 'sanitize_hex_color',
             '_acm_border_color' => 'sanitize_hex_color',
             '_acm_image_id'     => 'intval',
+            '_acm_img_width'    => 'intval', // NUEVO
         ];
 
         foreach ( $fields as $key => $sanitizer ) {
@@ -83,7 +87,7 @@ class ACM_Metabox {
             if ( isset( $_POST[ $input_name ] ) ) {
                 update_post_meta( $post_id, $key, call_user_func( $sanitizer, $_POST[ $input_name ] ) );
             } else {
-                if ( ($input_name === 'acm_image_id' || $input_name === 'acm_url') && empty($_POST[$input_name]) ) {
+                if ( in_array($input_name, ['acm_image_id', 'acm_url', 'acm_img_width']) && empty($_POST[$input_name]) ) {
                     delete_post_meta( $post_id, $key );
                 }
             }

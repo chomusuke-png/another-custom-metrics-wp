@@ -1,20 +1,34 @@
 <?php
-// Variables disponibles: $metric_value, ... $metric_layout
+// Variables disponibles: $metric_value, ... $metric_img_width
 wp_nonce_field('acm_save_metabox_data', 'acm_metabox_nonce');
 ?>
 <div class="acm-metabox-wrapper" style="display: grid; gap: 15px;">
 
     <div style="background: #f9f9f9; padding: 15px; border: 1px solid #ddd; border-radius: 4px;">
         <p style="margin-top:0;"><strong>Imagen / Icono:</strong></p>
+        
         <div id="acm_image_wrapper" style="margin-bottom: 10px; text-align: center; min-height: 50px; display: <?php echo $image_url ? 'block' : 'none'; ?>;">
-            <img id="acm_image_preview_tag" src="<?php echo esc_url($image_url); ?>" style="max-width: 100px; max-height: 100px; display: block; margin: 0 auto;">
+            <?php 
+                $preview_width = $metric_img_width ? intval($metric_img_width) : 80; 
+                // Limitamos visualmente en el admin para que no rompa el metabox si ponen 5000px
+                $admin_style = "width: {$preview_width}px; max-width: 100%; display: block; margin: 0 auto;";
+            ?>
+            <img id="acm_image_preview_tag" src="<?php echo esc_url($image_url); ?>" style="<?php echo $admin_style; ?>">
         </div>
+        
         <input type="hidden" id="acm_image_id" name="acm_image_id" value="<?php echo esc_attr($metric_image_id); ?>">
-        <div style="display: flex; gap: 10px; justify-content: center;">
+        
+        <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 15px;">
             <button type="button" class="button" id="acm_upload_image_btn"><?php echo $image_url ? 'Cambiar Imagen' : 'Subir Imagen'; ?></button>
             <button type="button" class="button button-link-delete" id="acm_remove_image_btn" style="<?php echo $image_url ? '' : 'display:none;'; ?>">Quitar</button>
         </div>
-    </div>
+
+        <div style="border-top: 1px solid #e0e0e0; pt-2; margin-top: 10px; padding-top: 10px;">
+            <label for="acm_img_width"><strong>Ancho de Imagen (px):</strong></label>
+            <input type="number" id="acm_img_width" name="acm_img_width" value="<?php echo esc_attr($metric_img_width); ?>" min="10" max="1000" style="width: 80px; margin-left: 10px;">
+            <span class="description" style="color:#666;">(Default: 80)</span>
+        </div>
+        </div>
 
     <p>
         <label for="acm_value"><strong>Valor de la Métrica:</strong></label><br>
@@ -30,6 +44,7 @@ wp_nonce_field('acm_save_metabox_data', 'acm_metabox_nonce');
             <option value="bottom" <?php selected($metric_layout, 'bottom'); ?>>Icono Abajo (Centro)</option>
         </select>
     </p>
+
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
         <p style="margin: 0;">
             <label for="acm_prefix"><strong>Prefijo:</strong></label><br>

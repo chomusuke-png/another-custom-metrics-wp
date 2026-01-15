@@ -9,6 +9,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const hiddenInput = document.getElementById('acm_image_id');
     const previewImg = document.getElementById('acm_image_preview_tag');
     const wrapper = document.getElementById('acm_image_wrapper');
+    // Nuevo input de ancho
+    const widthInput = document.getElementById('acm_img_width');
+
     let mediaFrame;
 
     if (uploadBtn) {
@@ -42,6 +45,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Listener especial para cambiar el tamaño de la miniatura en el admin inmediatamente (UX)
+    if (widthInput && previewImg) {
+        widthInput.addEventListener('input', (e) => {
+            const w = e.target.value;
+            if (w) {
+                previewImg.style.width = w + 'px';
+            }
+        });
+    }
+
     // --- 2. RESET DE COLORES ---
     const resetBtn = document.getElementById('acm_reset_colors');
     if (resetBtn) {
@@ -72,12 +85,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const formData = new FormData();
         formData.append('action', 'acm_render_preview');
         
-        // !!! AÑADIDO: 'acm_layout' !!!
+        // !!! AÑADIDO: 'acm_img_width' !!!
         const inputs = [
             'acm_value', 'acm_label', 'acm_url', 'acm_layout', 
             'acm_format', 'acm_decimals', 'acm_prefix', 'acm_suffix', 
             'acm_duration', 'acm_anim', 'acm_color', 'acm_bg_color', 
-            'acm_border_color', 'acm_image_id'
+            'acm_border_color', 'acm_image_id', 'acm_img_width'
         ];
 
         inputs.forEach(id => {
@@ -109,12 +122,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const debouncedUpdate = debounce(updatePreview, 500);
 
     // Listeners
-    // !!! AÑADIDO: 'acm_layout' !!!
+    // !!! AÑADIDO: 'acm_img_width' !!!
     const inputsIds = [
         'acm_value', 'acm_label', 'acm_url', 'acm_layout',
         'acm_format', 'acm_decimals', 'acm_prefix', 'acm_suffix', 
         'acm_duration', 'acm_anim', 'acm_color', 'acm_bg_color', 
-        'acm_border_color'
+        'acm_border_color', 'acm_img_width'
     ];
     
     inputsIds.forEach(id => {

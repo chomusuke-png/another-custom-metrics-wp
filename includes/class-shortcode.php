@@ -17,7 +17,7 @@ class ACM_Shortcode {
         $raw_value = get_post_meta( $post_id, '_acm_value', true );
         $label     = get_post_meta( $post_id, '_acm_label', true );
         $url       = get_post_meta( $post_id, '_acm_url', true );
-        $layout    = get_post_meta( $post_id, '_acm_layout', true ); // NUEVO
+        $layout    = get_post_meta( $post_id, '_acm_layout', true );
         if ( empty( $layout ) ) $layout = 'top';
 
         $format    = get_post_meta( $post_id, '_acm_format', true );
@@ -35,12 +35,18 @@ class ACM_Shortcode {
         $bg_color     = get_post_meta( $post_id, '_acm_bg_color', true ); 
         $border_color = get_post_meta( $post_id, '_acm_border_color', true );
 
+        // Imagen y Ancho
         $image_id     = get_post_meta( $post_id, '_acm_image_id', true );
+        $img_width    = get_post_meta( $post_id, '_acm_img_width', true ); // NUEVO
+        if ( empty( $img_width ) ) $img_width = 80; // Default
+
         $image_html   = '';
         if ( $image_id ) {
             $image_url = wp_get_attachment_image_url( $image_id, 'medium' );
             if ( $image_url ) {
-                $image_html = '<img class="acm-icon" src="' . esc_url( $image_url ) . '" alt="" />';
+                // Aplicamos width exacto y max-width: none para vencer al CSS
+                $style_img = 'width: ' . intval($img_width) . 'px; max-width: none;';
+                $image_html = '<img class="acm-icon" src="' . esc_url( $image_url ) . '" alt="" style="' . $style_img . '" />';
             }
         }
 
@@ -53,7 +59,6 @@ class ACM_Shortcode {
         if ( $border_color ) { $card_style_arr[] = "border-color: {$border_color};"; }
         $card_style = ! empty( $card_style_arr ) ? 'style="' . implode( ' ', $card_style_arr ) . '"' : '';
 
-        // Layout class
         $layout_class = 'acm-layout-' . esc_attr( $layout );
 
         $data_attr = '';
