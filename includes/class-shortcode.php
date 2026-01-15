@@ -16,6 +16,7 @@ class ACM_Shortcode {
         // Recuperar Meta
         $raw_value = get_post_meta( $post_id, '_acm_value', true );
         $label     = get_post_meta( $post_id, '_acm_label', true );
+        $url       = get_post_meta( $post_id, '_acm_url', true );
         $format    = get_post_meta( $post_id, '_acm_format', true );
         $prefix    = get_post_meta( $post_id, '_acm_prefix', true );
         $suffix    = get_post_meta( $post_id, '_acm_suffix', true );

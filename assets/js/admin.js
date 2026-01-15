@@ -1,16 +1,9 @@
-/**
- * ACM Admin
- * Lógica para el panel de administración de WordPress.
- * Depende de: acm-core.js, wp.media
- */
 document.addEventListener('DOMContentLoaded', () => {
 
     const previewContainer = document.getElementById('acm-admin-preview');
-    
-    // Si no existe el contenedor de preview, no estamos en la página de edición correcta
     if (!previewContainer) return;
 
-    // --- 1. GESTIÓN DE IMAGEN (MEDIA UPLOADER) ---
+    // --- 1. GESTIÓN DE IMAGEN --- (Se mantiene igual)
     const uploadBtn = document.getElementById('acm_upload_image_btn');
     const removeBtn = document.getElementById('acm_remove_image_btn');
     const hiddenInput = document.getElementById('acm_image_id');
@@ -22,13 +15,11 @@ document.addEventListener('DOMContentLoaded', () => {
         uploadBtn.addEventListener('click', (e) => {
             e.preventDefault();
             if (mediaFrame) { mediaFrame.open(); return; }
-            
             mediaFrame = wp.media({
                 title: 'Seleccionar Icono o Imagen',
                 button: { text: 'Usar esta imagen' },
                 multiple: false
             });
-
             mediaFrame.on('select', () => {
                 const attachment = mediaFrame.state().get('selection').first().toJSON();
                 hiddenInput.value = attachment.id;
@@ -38,10 +29,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 uploadBtn.textContent = 'Cambiar Imagen';
                 updatePreview();
             });
-
             mediaFrame.open();
         });
-
         removeBtn.addEventListener('click', (e) => {
             e.preventDefault();
             hiddenInput.value = '';
@@ -53,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- 2. RESET DE COLORES ---
+    // --- 2. RESET DE COLORES --- (Se mantiene igual)
     const resetBtn = document.getElementById('acm_reset_colors');
     if (resetBtn) {
         resetBtn.addEventListener('click', (e) => {
@@ -66,7 +55,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- DEBOUNCE FUNCTION ---
-    // Para no saturar el servidor con cada tecla pulsada
     const debounce = (func, wait) => {
         let timeout;
         return function executedFunction(...args) {
@@ -81,16 +69,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- VISTA PREVIA VIA AJAX ---
     const updatePreview = () => {
-        // 1. Recoger datos del formulario
-        // Un truco rápido es usar FormData con un form ficticio o seleccionar inputs
-        // Dado que los inputs están dispersos, vamos a seleccionarlos manualmente o envolver el metabox en un form (pero ya estamos dentro de un form #post).
-        // Lo mejor es construir un FormData manual con los IDs que ya conoces.
-        
         const formData = new FormData();
         formData.append('action', 'acm_render_preview');
         
+        // !!! AÑADIDO: 'acm_url' a la lista de inputs !!!
         const inputs = [
-            'acm_value', 'acm_label', 'acm_format', 'acm_decimals', 
+            'acm_value', 'acm_label', 'acm_url', 'acm_format', 'acm_decimals', 
             'acm_prefix', 'acm_suffix', 'acm_duration', 'acm_anim',
             'acm_color', 'acm_bg_color', 'acm_border_color', 'acm_image_id'
         ];
@@ -100,11 +84,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if(el) formData.append(id, el.value);
         });
 
-        // Indicador de carga
         previewContainer.style.opacity = '0.5';
 
-        // 2. Fetch
-        fetch(ajaxurl, { // 'ajaxurl' es global en admin de WP
+        fetch(ajaxurl, {
             method: 'POST',
             body: formData
         })
@@ -112,7 +94,6 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(data => {
             if(data.success) {
                 previewContainer.innerHTML = data.data;
-                // Reiniciar animación
                 const newVal = previewContainer.querySelector('.acm-value');
                 if(newVal && window.ACM) {
                     window.ACM.startAnimation(newVal);
@@ -124,11 +105,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    const debouncedUpdate = debounce(updatePreview, 500); // Espera 500ms tras dejar de escribir
+    const debouncedUpdate = debounce(updatePreview, 500);
 
     // Listeners
+    // !!! AÑADIDO: 'acm_url' a la lista de listeners !!!
     const inputsIds = [
-        'acm_value', 'acm_label', 'acm_format', 'acm_decimals', 
+        'acm_value', 'acm_label', 'acm_url', 'acm_format', 'acm_decimals', 
         'acm_prefix', 'acm_suffix', 'acm_duration', 'acm_anim',
         'acm_color', 'acm_bg_color', 'acm_border_color'
     ];
@@ -137,13 +119,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const el = document.getElementById(id);
         if (el) {
             el.addEventListener('input', debouncedUpdate);
-            el.addEventListener('change', updatePreview); // Change directo para selects/color
+            el.addEventListener('change', updatePreview);
         }
     });
 
-    // Para la imagen, trigger manual cuando se selecciona
-    // (Añade updatePreview() dentro del callback del mediaFrame.on('select') que tienes arriba)
-
-    // Inicializar
     updatePreview();
 });
