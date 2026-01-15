@@ -18,6 +18,12 @@ class ACM_Ajax {
         $url       = isset($_POST['acm_url']) ? esc_url_raw($_POST['acm_url']) : '';
         $layout    = isset($_POST['acm_layout']) ? sanitize_key($_POST['acm_layout']) : 'top';
         
+        // --- NUEVO ---
+        $value_size = isset($_POST['acm_value_size']) ? floatval($_POST['acm_value_size']) : 3;
+        $label_size = isset($_POST['acm_label_size']) ? floatval($_POST['acm_label_size']) : 1;
+        if($value_size <= 0) $value_size = 3;
+        if($label_size <= 0) $label_size = 1;
+
         $format    = isset($_POST['acm_format']) ? sanitize_key($_POST['acm_format']) : 'raw';
         $prefix    = isset($_POST['acm_prefix']) ? sanitize_text_field($_POST['acm_prefix']) : '';
         $suffix    = isset($_POST['acm_suffix']) ? sanitize_text_field($_POST['acm_suffix']) : '';
@@ -29,7 +35,7 @@ class ACM_Ajax {
         $bg_color     = isset($_POST['acm_bg_color']) ? sanitize_hex_color($_POST['acm_bg_color']) : '';
         $border_color = isset($_POST['acm_border_color']) ? sanitize_hex_color($_POST['acm_border_color']) : '';
 
-        // Imagen y Ancho
+        // Imagen
         $image_id  = isset($_POST['acm_image_id']) ? intval($_POST['acm_image_id']) : 0;
         $img_width = isset($_POST['acm_img_width']) ? intval($_POST['acm_img_width']) : 80;
         if ( $img_width <= 0 ) $img_width = 80;
@@ -46,7 +52,16 @@ class ACM_Ajax {
         $formatted_number = ACM_Utils::format_metric( $raw_value, $format, $decimals );
         $final_output     = esc_html( $prefix ) . $formatted_number . esc_html( $suffix );
 
-        $value_style = $color ? "style='color: {$color}; border-color: {$color};'" : '';
+        // Estilos Valor
+        $value_style_arr = [];
+        if ( $color ) { $value_style_arr[] = "color: {$color}; border-color: {$color};"; }
+        $value_style_arr[] = "font-size: " . floatval($value_size) . "rem;";
+        $value_style = 'style="' . implode( ' ', $value_style_arr ) . '"';
+
+        // Estilos Label
+        $label_style = 'style="font-size: ' . floatval($label_size) . 'rem;"';
+
+        // Estilos Tarjeta
         $card_style_arr = [];
         if ( $bg_color ) { $card_style_arr[] = "background-color: {$bg_color};"; }
         if ( $border_color ) { $card_style_arr[] = "border-color: {$border_color};"; }

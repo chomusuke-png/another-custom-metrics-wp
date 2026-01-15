@@ -1,39 +1,40 @@
 <?php
-// Variables disponibles: $metric_value, ... $metric_img_width
+// Variables disponibles: ... $metric_value_size, $metric_label_size
 wp_nonce_field('acm_save_metabox_data', 'acm_metabox_nonce');
 ?>
 <div class="acm-metabox-wrapper" style="display: grid; gap: 15px;">
 
     <div style="background: #f9f9f9; padding: 15px; border: 1px solid #ddd; border-radius: 4px;">
         <p style="margin-top:0;"><strong>Imagen / Icono:</strong></p>
-        
         <div id="acm_image_wrapper" style="margin-bottom: 10px; text-align: center; min-height: 50px; display: <?php echo $image_url ? 'block' : 'none'; ?>;">
             <?php 
                 $preview_width = $metric_img_width ? intval($metric_img_width) : 80; 
-                // Limitamos visualmente en el admin para que no rompa el metabox si ponen 5000px
                 $admin_style = "width: {$preview_width}px; max-width: 100%; display: block; margin: 0 auto;";
             ?>
             <img id="acm_image_preview_tag" src="<?php echo esc_url($image_url); ?>" style="<?php echo $admin_style; ?>">
         </div>
-        
         <input type="hidden" id="acm_image_id" name="acm_image_id" value="<?php echo esc_attr($metric_image_id); ?>">
-        
         <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 15px;">
             <button type="button" class="button" id="acm_upload_image_btn"><?php echo $image_url ? 'Cambiar Imagen' : 'Subir Imagen'; ?></button>
             <button type="button" class="button button-link-delete" id="acm_remove_image_btn" style="<?php echo $image_url ? '' : 'display:none;'; ?>">Quitar</button>
         </div>
-
         <div style="border-top: 1px solid #e0e0e0; pt-2; margin-top: 10px; padding-top: 10px;">
             <label for="acm_img_width"><strong>Ancho de Imagen (px):</strong></label>
             <input type="number" id="acm_img_width" name="acm_img_width" value="<?php echo esc_attr($metric_img_width); ?>" min="10" max="1000" style="width: 80px; margin-left: 10px;">
-            <span class="description" style="color:#666;">(Default: 80)</span>
         </div>
-        </div>
+    </div>
 
-    <p>
-        <label for="acm_value"><strong>Valor de la Métrica:</strong></label><br>
-        <input type="text" id="acm_value" name="acm_value" value="<?php echo esc_attr($metric_value); ?>" style="width: 100%;" placeholder="Ej: 1500">
-    </p>
+    <div style="display: grid; grid-template-columns: 3fr 1fr; gap: 15px;">
+        <p style="margin: 0;">
+            <label for="acm_value"><strong>Valor de la Métrica:</strong></label><br>
+            <input type="text" id="acm_value" name="acm_value" value="<?php echo esc_attr($metric_value); ?>" style="width: 100%;" placeholder="Ej: 1500">
+        </p>
+        <p style="margin: 0;">
+            <label for="acm_value_size"><strong>Tamaño (rem):</strong></label><br>
+            <input type="number" id="acm_value_size" name="acm_value_size" value="<?php echo esc_attr($metric_value_size); ?>" step="0.1" min="0.5" style="width: 100%;">
+            <span class="description" style="font-size:10px; color:#666;">Def: 3</span>
+        </p>
+    </div>
 
     <p>
         <label for="acm_layout"><strong>Disposición / Alineación:</strong></label><br>
@@ -92,10 +93,17 @@ wp_nonce_field('acm_save_metabox_data', 'acm_metabox_nonce');
         </p>
     </div>
 
-    <p>
-        <label for="acm_label"><strong>Etiqueta / Descripción:</strong></label><br>
-        <input type="text" id="acm_label" name="acm_label" value="<?php echo esc_attr($metric_label); ?>" style="width: 100%;">
-    </p>
+    <div style="display: grid; grid-template-columns: 3fr 1fr; gap: 15px;">
+        <p style="margin: 0;">
+            <label for="acm_label"><strong>Etiqueta / Descripción:</strong></label><br>
+            <input type="text" id="acm_label" name="acm_label" value="<?php echo esc_attr($metric_label); ?>" style="width: 100%;">
+        </p>
+        <p style="margin: 0;">
+            <label for="acm_label_size"><strong>Tamaño (rem):</strong></label><br>
+            <input type="number" id="acm_label_size" name="acm_label_size" value="<?php echo esc_attr($metric_label_size); ?>" step="0.1" min="0.5" style="width: 100%;">
+            <span class="description" style="font-size:10px; color:#666;">Def: 1</span>
+        </p>
+    </div>
 
     <p>
         <label for="acm_url"><strong>URL de Destino (Opcional):</strong></label><br>

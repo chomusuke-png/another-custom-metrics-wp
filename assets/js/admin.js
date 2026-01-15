@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const hiddenInput = document.getElementById('acm_image_id');
     const previewImg = document.getElementById('acm_image_preview_tag');
     const wrapper = document.getElementById('acm_image_wrapper');
-    // Nuevo input de ancho
     const widthInput = document.getElementById('acm_img_width');
 
     let mediaFrame;
@@ -45,13 +44,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Listener especial para cambiar el tamaño de la miniatura en el admin inmediatamente (UX)
     if (widthInput && previewImg) {
         widthInput.addEventListener('input', (e) => {
             const w = e.target.value;
-            if (w) {
-                previewImg.style.width = w + 'px';
-            }
+            if (w) { previewImg.style.width = w + 'px'; }
         });
     }
 
@@ -85,12 +81,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const formData = new FormData();
         formData.append('action', 'acm_render_preview');
         
-        // !!! AÑADIDO: 'acm_img_width' !!!
+        // !!! AÑADIDO: 'acm_value_size' y 'acm_label_size' !!!
         const inputs = [
             'acm_value', 'acm_label', 'acm_url', 'acm_layout', 
             'acm_format', 'acm_decimals', 'acm_prefix', 'acm_suffix', 
             'acm_duration', 'acm_anim', 'acm_color', 'acm_bg_color', 
-            'acm_border_color', 'acm_image_id', 'acm_img_width'
+            'acm_border_color', 'acm_image_id', 'acm_img_width',
+            'acm_value_size', 'acm_label_size'
         ];
 
         inputs.forEach(id => {
@@ -122,12 +119,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const debouncedUpdate = debounce(updatePreview, 500);
 
     // Listeners
-    // !!! AÑADIDO: 'acm_img_width' !!!
+    // !!! AÑADIDO: 'acm_value_size' y 'acm_label_size' !!!
     const inputsIds = [
         'acm_value', 'acm_label', 'acm_url', 'acm_layout',
         'acm_format', 'acm_decimals', 'acm_prefix', 'acm_suffix', 
         'acm_duration', 'acm_anim', 'acm_color', 'acm_bg_color', 
-        'acm_border_color', 'acm_img_width'
+        'acm_border_color', 'acm_img_width', 'acm_value_size', 'acm_label_size'
     ];
     
     inputsIds.forEach(id => {

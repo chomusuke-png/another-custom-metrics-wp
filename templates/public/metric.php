@@ -2,15 +2,17 @@
 /**
  * Variables esperadas:
  * $card_style, $image_html, $anim, $value_style, $data_attr, $final_output, $label, $url, $layout_class
+ * $label_style (NUEVO)
  */
 
 $tag = ! empty( $url ) ? 'a' : 'div';
 $href_attr = ! empty( $url ) ? 'href="' . esc_url( $url ) . '"' : '';
 $link_class = ! empty( $url ) ? 'acm-is-link' : '';
-$extra_style = ! empty( $url ) ? 'text-decoration: none; color: inherit; display: flex;' : ''; // display:flex para mantener comportamiento
-
-// Aseguramos que la clase de layout se aplique
+$extra_style = ! empty( $url ) ? 'text-decoration: none; color: inherit; display: flex;' : ''; 
 $layout_cls = ! empty( $layout_class ) ? $layout_class : 'acm-layout-top';
+
+// Aseguramos fallback para label_style si no viene definido (por compatibilidad)
+if ( ! isset( $label_style ) ) $label_style = '';
 ?>
 
 <<?php echo $tag; ?> class="acm-widget-card <?php echo $layout_cls; ?> <?php echo $link_class; ?>" <?php echo $href_attr; ?> <?php echo $card_style; ?> style="<?php echo $extra_style; ?>">
@@ -25,7 +27,7 @@ $layout_cls = ! empty( $layout_class ) ? $layout_class : 'acm-layout-top';
         <div class="acm-value acm-anim-<?php echo esc_attr( $anim ); ?>" <?php echo $value_style; ?> <?php echo $data_attr; ?>>
             <?php echo $final_output; ?>
         </div>
-        <div class="acm-label">
+        <div class="acm-label" <?php echo $label_style; ?>>
             <?php echo esc_html( $label ); ?>
         </div>
     </div>
