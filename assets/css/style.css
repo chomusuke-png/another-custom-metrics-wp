@@ -87,10 +87,40 @@
 }
 .acm-value span { text-align: center; }
 
-/* Responsive para Grupos */
-@media (max-width: 768px) {
-    .acm-group-container {
-        /* Forzamos 1 columna en móvil independientemente del shortcode */
-        grid-template-columns: 1fr !important; 
-    }
+/* --- SISTEMA DE REJILLA RESPONSIVE PARA GRUPOS --- */
+
+.acm-group-container {
+    display: grid;
+    width: 100%;
+    
 }
+
+/* COLUMNAS: 4 */
+/* Escritorio: 4 | Tablet: 2 | Móvil: 1 */
+.acm-cols-4 { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 1024px) { 
+    .acm-cols-4 { grid-template-columns: repeat(2, 1fr); } 
+}
+@media (max-width: 600px) { 
+    .acm-cols-4 { grid-template-columns: 1fr; } 
+}
+
+/* COLUMNAS: 3 */
+/* Escritorio: 3 | Tablet: 2 | Móvil: 1 */
+.acm-cols-3 { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 900px) { 
+    .acm-cols-3 { grid-template-columns: repeat(2, 1fr); } 
+}
+@media (max-width: 600px) { 
+    .acm-cols-3 { grid-template-columns: 1fr; } 
+}
+
+/* COLUMNAS: 2 */
+/* Escritorio: 2 | Móvil: 1 */
+.acm-cols-2 { grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 600px) { 
+    .acm-cols-2 { grid-template-columns: 1fr; } 
+}
+
+/* COLUMNAS: 1 */
+.acm-cols-1 { grid-template-columns: 1fr; }
