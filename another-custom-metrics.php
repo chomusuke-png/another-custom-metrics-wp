@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Another Custom Metrics
  * Description: Sistema de gestión de widgets de estadísticas mediante CPT y Shortcodes.
- * Version: 1.1.2
+ * Version: 1.1.3
  * Author: Zumito
  * Text Domain: another-custom-metrics
  */
@@ -36,7 +36,7 @@ class ACM_Init {
      * Carga de scripts para el Frontend (Visitantes)
      */
     public function enqueue_frontend_assets() {
-        wp_enqueue_style( 'acm-styles', ACM_URL . 'assets/css/style.css', [], '1.0.0' );
+        wp_enqueue_style( 'acm-styles', ACM_URL . 'assets/css/style.css', [], '1.0.1' );
         wp_enqueue_script( 'acm-core', ACM_URL . 'assets/js/core.js', [], '1.0.7', true );
         wp_enqueue_script( 'acm-frontend', ACM_URL . 'assets/js/frontend.js', ['acm-core'], '1.0.7', true );
     }

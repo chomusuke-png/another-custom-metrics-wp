@@ -8,9 +8,6 @@ class ACM_Shortcode {
         add_shortcode( 'acm_group', [ $this, 'render_group_shortcode' ] );
     }
 
-    /**
-     * Shortcode: [acm_group ids="10,12,15" cols="3" gap="20px"]
-     */
     public function render_group_shortcode( $atts ) {
         $atts = shortcode_atts( [
             'ids'          => '',       
@@ -30,7 +27,6 @@ class ACM_Shortcode {
         $ids_array = explode( ',', $atts['ids'] );
         $ids_array = array_map( 'intval', $ids_array );
         
-        // Overrides
         $overrides = [];
         if ( ! empty( $atts['color'] ) )        $overrides['color']        = $atts['color'];
         if ( ! empty( $atts['bg_color'] ) )     $overrides['bg_color']     = $atts['bg_color'];
@@ -39,14 +35,17 @@ class ACM_Shortcode {
         if ( ! empty( $atts['label_size'] ) )   $overrides['label_size']   = $atts['label_size'];
         if ( ! empty( $atts['icon_color'] ) )   $overrides['icon_color']   = $atts['icon_color'];
 
-        // Sanitización de Columnas: Aseguramos que sea entre 1 y 4 para coincidir con el CSS
+        // 1. LIMITES: Subimos el límite a 12 (razonable para bootstrap/grids estándar)
         $cols = intval( $atts['cols'] );
         if ( $cols < 1 ) $cols = 1;
-        if ( $cols > 4 ) $cols = 4;
+        if ( $cols > 12 ) $cols = 12;
 
-        $grid_style = "display: grid; gap: " . esc_attr($atts['gap']) . ";";
+        // 2. ESTILOS: Pasamos la variable CSS para que la hoja de estilos la use
+        // display: grid y gap se mantienen, pero grid-template-columns lo maneja el CSS
+        $grid_style  = "display: grid; gap: " . esc_attr($atts['gap']) . ";";
+        $grid_style .= "--acm-cols: " . $cols . ";";
         
-        $output = '<div class="acm-group-container acm-cols-' . $cols . '" style="' . $grid_style . '">';
+        $output = '<div class="acm-group-container" style="' . $grid_style . '">';
         
         foreach ( $ids_array as $post_id ) {
             if ( $post_id && get_post_type( $post_id ) === 'acm_widget' ) {
@@ -78,7 +77,7 @@ class ACM_Shortcode {
             return ( $val === '' || $val === false ) ? $default : $val;
         };
 
-        // Datos de contenido
+        // Extracción de Datos
         $raw_value = get_post_meta( $post_id, '_acm_value', true );
         $label     = get_post_meta( $post_id, '_acm_label', true );
         $url       = get_post_meta( $post_id, '_acm_url', true );
@@ -98,7 +97,6 @@ class ACM_Shortcode {
         if ( empty( $anim ) ) $anim = 'count';
         if ( empty( $img_width ) ) $img_width = 80;
 
-        // Datos Estéticos
         $color        = $get_val( 'color', '_acm_color' );
         $bg_color     = $get_val( 'bg_color', '_acm_bg_color' );
         $border_color = $get_val( 'border_color', '_acm_border_color' );
@@ -106,7 +104,6 @@ class ACM_Shortcode {
         $label_size   = $get_val( 'label_size', '_acm_label_size', '1' );
         $icon_color   = $get_val( 'icon_color', '_acm_icon_color' );
 
-        // Renderizado
         $image_html = '';
         if ( class_exists('ACM_Utils') && method_exists('ACM_Utils', 'render_icon_html') ) {
             $image_html = ACM_Utils::render_icon_html( $image_id, $img_width, $icon_color );
