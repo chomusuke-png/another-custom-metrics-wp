@@ -86,3 +86,11 @@
     100% { opacity: 1; transform: scale(1); }
 }
 .acm-value span { text-align: center; }
+
+/* Responsive para Grupos */
+@media (max-width: 768px) {
+    .acm-group-container {
+        /* Forzamos 1 columna en móvil independientemente del shortcode */
+        grid-template-columns: 1fr !important; 
+    }
+}
