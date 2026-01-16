@@ -18,7 +18,6 @@ class ACM_Ajax {
         $url       = isset($_POST['acm_url']) ? esc_url_raw($_POST['acm_url']) : '';
         $layout    = isset($_POST['acm_layout']) ? sanitize_key($_POST['acm_layout']) : 'top';
         
-        // --- NUEVO ---
         $value_size = isset($_POST['acm_value_size']) ? floatval($_POST['acm_value_size']) : 3;
         $label_size = isset($_POST['acm_label_size']) ? floatval($_POST['acm_label_size']) : 1;
         if($value_size <= 0) $value_size = 3;
@@ -35,19 +34,13 @@ class ACM_Ajax {
         $bg_color     = isset($_POST['acm_bg_color']) ? sanitize_hex_color($_POST['acm_bg_color']) : '';
         $border_color = isset($_POST['acm_border_color']) ? sanitize_hex_color($_POST['acm_border_color']) : '';
 
-        // Imagen
+        // Imagen e Icono
         $image_id  = isset($_POST['acm_image_id']) ? intval($_POST['acm_image_id']) : 0;
         $img_width = isset($_POST['acm_img_width']) ? intval($_POST['acm_img_width']) : 80;
-        if ( $img_width <= 0 ) $img_width = 80;
+        $icon_color = isset($_POST['acm_icon_color']) ? sanitize_hex_color($_POST['acm_icon_color']) : ''; // NUEVO
 
-        $image_html = '';
-        if ( $image_id ) {
-            $image_url = wp_get_attachment_image_url( $image_id, 'medium' );
-            if ( $image_url ) {
-                $style_img = 'width: ' . intval($img_width) . 'px; max-width: none;';
-                $image_html = '<img class="acm-icon" src="' . esc_url( $image_url ) . '" alt="" style="' . $style_img . '" />';
-            }
-        }
+        // Render via Utils
+        $image_html = ACM_Utils::render_icon_html( $image_id, $img_width, $icon_color );
 
         $formatted_number = ACM_Utils::format_metric( $raw_value, $format, $decimals );
         $final_output     = esc_html( $prefix ) . $formatted_number . esc_html( $suffix );

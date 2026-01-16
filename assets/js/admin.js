@@ -59,6 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('acm_color').value = '#0073aa';
             document.getElementById('acm_bg_color').value = '#ffffff';
             document.getElementById('acm_border_color').value = '#e5e5e5';
+            document.getElementById('acm_icon_color').value = '#000000'; // Reset icono
             updatePreview();
         });
     }
@@ -81,13 +82,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const formData = new FormData();
         formData.append('action', 'acm_render_preview');
         
-        // !!! AÑADIDO: 'acm_value_size' y 'acm_label_size' !!!
+        // !!! AÑADIDO: 'acm_icon_color' !!!
         const inputs = [
             'acm_value', 'acm_label', 'acm_url', 'acm_layout', 
             'acm_format', 'acm_decimals', 'acm_prefix', 'acm_suffix', 
             'acm_duration', 'acm_anim', 'acm_color', 'acm_bg_color', 
             'acm_border_color', 'acm_image_id', 'acm_img_width',
-            'acm_value_size', 'acm_label_size'
+            'acm_value_size', 'acm_label_size', 'acm_icon_color'
         ];
 
         inputs.forEach(id => {
@@ -119,12 +120,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const debouncedUpdate = debounce(updatePreview, 500);
 
     // Listeners
-    // !!! AÑADIDO: 'acm_value_size' y 'acm_label_size' !!!
+    // !!! AÑADIDO: 'acm_icon_color' !!!
     const inputsIds = [
         'acm_value', 'acm_label', 'acm_url', 'acm_layout',
         'acm_format', 'acm_decimals', 'acm_prefix', 'acm_suffix', 
         'acm_duration', 'acm_anim', 'acm_color', 'acm_bg_color', 
-        'acm_border_color', 'acm_img_width', 'acm_value_size', 'acm_label_size'
+        'acm_border_color', 'acm_img_width', 'acm_value_size', 
+        'acm_label_size', 'acm_icon_color'
     ];
     
     inputsIds.forEach(id => {

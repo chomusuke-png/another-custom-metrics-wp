@@ -1,11 +1,12 @@
 <?php
-// Variables disponibles: ... $metric_value_size, $metric_label_size
+// Variables disponibles: ... $metric_icon_color
 wp_nonce_field('acm_save_metabox_data', 'acm_metabox_nonce');
 ?>
 <div class="acm-metabox-wrapper" style="display: grid; gap: 15px;">
 
     <div style="background: #f9f9f9; padding: 15px; border: 1px solid #ddd; border-radius: 4px;">
         <p style="margin-top:0;"><strong>Imagen / Icono:</strong></p>
+        
         <div id="acm_image_wrapper" style="margin-bottom: 10px; text-align: center; min-height: 50px; display: <?php echo $image_url ? 'block' : 'none'; ?>;">
             <?php 
                 $preview_width = $metric_img_width ? intval($metric_img_width) : 80; 
@@ -13,14 +14,24 @@ wp_nonce_field('acm_save_metabox_data', 'acm_metabox_nonce');
             ?>
             <img id="acm_image_preview_tag" src="<?php echo esc_url($image_url); ?>" style="<?php echo $admin_style; ?>">
         </div>
+        
         <input type="hidden" id="acm_image_id" name="acm_image_id" value="<?php echo esc_attr($metric_image_id); ?>">
+        
         <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 15px;">
             <button type="button" class="button" id="acm_upload_image_btn"><?php echo $image_url ? 'Cambiar Imagen' : 'Subir Imagen'; ?></button>
             <button type="button" class="button button-link-delete" id="acm_remove_image_btn" style="<?php echo $image_url ? '' : 'display:none;'; ?>">Quitar</button>
         </div>
-        <div style="border-top: 1px solid #e0e0e0; pt-2; margin-top: 10px; padding-top: 10px;">
-            <label for="acm_img_width"><strong>Ancho de Imagen (px):</strong></label>
-            <input type="number" id="acm_img_width" name="acm_img_width" value="<?php echo esc_attr($metric_img_width); ?>" min="10" max="1000" style="width: 80px; margin-left: 10px;">
+        
+        <div style="display: flex; gap: 20px; border-top: 1px solid #e0e0e0; margin-top: 10px; padding-top: 10px; align-items: flex-start;">
+            <div style="flex: 1;">
+                <label for="acm_img_width"><strong>Ancho (px):</strong></label><br>
+                <input type="number" id="acm_img_width" name="acm_img_width" value="<?php echo esc_attr($metric_img_width); ?>" min="10" max="1000" style="width: 100%;">
+            </div>
+            <div style="flex: 1;">
+                <label for="acm_icon_color"><strong>Colorear Icono:</strong></label><br>
+                <input type="color" id="acm_icon_color" name="acm_icon_color" value="<?php echo esc_attr($metric_icon_color); ?>" style="width: 100%; height: 30px;">
+                <span class="description" style="font-size: 10px; display: block; line-height: 1.2;">Selecciona negro (por defecto) para no colorear. Útil para cambiar color a iconos PNG negros.</span>
+            </div>
         </div>
     </div>
 
@@ -113,7 +124,7 @@ wp_nonce_field('acm_save_metabox_data', 'acm_metabox_nonce');
     <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;">
     
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <strong>Apariencia:</strong>
+        <strong>Apariencia Tarjeta:</strong>
         <button type="button" id="acm_reset_colors" class="button button-small">Restablecer Colores</button>
     </div>
     

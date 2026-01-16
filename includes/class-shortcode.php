@@ -20,7 +20,6 @@ class ACM_Shortcode {
         $layout    = get_post_meta( $post_id, '_acm_layout', true );
         if ( empty( $layout ) ) $layout = 'top';
 
-        // --- NUEVO: TAMAÑOS ---
         $value_size = get_post_meta( $post_id, '_acm_value_size', true );
         $label_size = get_post_meta( $post_id, '_acm_label_size', true );
         if ( empty( $value_size ) ) $value_size = 3;
@@ -41,18 +40,13 @@ class ACM_Shortcode {
         $bg_color     = get_post_meta( $post_id, '_acm_bg_color', true ); 
         $border_color = get_post_meta( $post_id, '_acm_border_color', true );
 
+        // --- IMAGEN E ICONO ---
         $image_id     = get_post_meta( $post_id, '_acm_image_id', true );
         $img_width    = get_post_meta( $post_id, '_acm_img_width', true );
-        if ( empty( $img_width ) ) $img_width = 80;
-
-        $image_html   = '';
-        if ( $image_id ) {
-            $image_url = wp_get_attachment_image_url( $image_id, 'medium' );
-            if ( $image_url ) {
-                $style_img = 'width: ' . intval($img_width) . 'px; max-width: none;';
-                $image_html = '<img class="acm-icon" src="' . esc_url( $image_url ) . '" alt="" style="' . $style_img . '" />';
-            }
-        }
+        $icon_color   = get_post_meta( $post_id, '_acm_icon_color', true ); // NUEVO
+        
+        // Delegamos renderizado a Utils para soportar coloreado
+        $image_html   = ACM_Utils::render_icon_html( $image_id, $img_width, $icon_color );
 
         $formatted_number = ACM_Utils::format_metric( $raw_value, $format, $decimals );
         $final_output     = esc_html( $prefix ) . $formatted_number . esc_html( $suffix );
