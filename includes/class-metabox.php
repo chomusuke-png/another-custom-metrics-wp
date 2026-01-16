@@ -27,18 +27,18 @@ class ACM_Metabox {
         $metric_suffix       = get_post_meta( $post->ID, '_acm_suffix', true );
         $metric_duration     = get_post_meta( $post->ID, '_acm_duration', true );
         $metric_anim         = get_post_meta( $post->ID, '_acm_anim', true );
+        
         $metric_color        = get_post_meta( $post->ID, '_acm_color', true );
+        $metric_label_color  = get_post_meta( $post->ID, '_acm_label_color', true );
         $metric_bg_color     = get_post_meta( $post->ID, '_acm_bg_color', true );
         $metric_border_color = get_post_meta( $post->ID, '_acm_border_color', true );
         
-        // --- IMAGEN E ICONO ---
         $metric_image_id     = get_post_meta( $post->ID, '_acm_image_id', true );
         $metric_img_width    = get_post_meta( $post->ID, '_acm_img_width', true );
-        $metric_icon_color   = get_post_meta( $post->ID, '_acm_icon_color', true ); // NUEVO
+        $metric_icon_color   = get_post_meta( $post->ID, '_acm_icon_color', true );
         
         $image_url           = $metric_image_id ? wp_get_attachment_image_url( $metric_image_id, 'medium' ) : '';
 
-        // --- TAMAÑOS DE FUENTE ---
         $metric_value_size   = get_post_meta( $post->ID, '_acm_value_size', true );
         $metric_label_size   = get_post_meta( $post->ID, '_acm_label_size', true );
 
@@ -50,7 +50,6 @@ class ACM_Metabox {
         if ( empty( $metric_layout ) ) { $metric_layout = 'top'; }
         if ( empty( $metric_img_width ) ) { $metric_img_width = '80'; }
         
-        // Defaults Fuentes
         if ( empty( $metric_value_size ) ) { $metric_value_size = '3'; } 
         if ( empty( $metric_label_size ) ) { $metric_label_size = '1'; } 
 
@@ -78,18 +77,21 @@ class ACM_Metabox {
             '_acm_label'        => 'sanitize_text_field',
             '_acm_url'          => 'esc_url_raw',
             '_acm_layout'       => 'sanitize_key',
+            
             '_acm_color'        => 'sanitize_hex_color',
+            '_acm_label_color'  => 'sanitize_hex_color',
+            '_acm_bg_color'     => 'sanitize_hex_color',
+            '_acm_border_color' => 'sanitize_hex_color',
+            
             '_acm_format'       => 'sanitize_key',
             '_acm_decimals'     => 'intval',
             '_acm_prefix'       => 'sanitize_text_field',
             '_acm_suffix'       => 'sanitize_text_field',
             '_acm_duration'     => 'sanitize_text_field',
             '_acm_anim'         => 'sanitize_key',
-            '_acm_bg_color'     => 'sanitize_hex_color',
-            '_acm_border_color' => 'sanitize_hex_color',
             '_acm_image_id'     => 'intval',
             '_acm_img_width'    => 'intval',
-            '_acm_icon_color'   => 'sanitize_hex_color', // NUEVO
+            '_acm_icon_color'   => 'sanitize_hex_color',
             '_acm_value_size'   => 'sanitize_text_field', 
             '_acm_label_size'   => 'sanitize_text_field', 
         ];
@@ -99,8 +101,7 @@ class ACM_Metabox {
             if ( isset( $_POST[ $input_name ] ) ) {
                 update_post_meta( $post_id, $key, call_user_func( $sanitizer, $_POST[ $input_name ] ) );
             } else {
-                // Borrar si está vacío para inputs opcionales
-                if ( in_array($input_name, ['acm_image_id', 'acm_url', 'acm_img_width', 'acm_value_size', 'acm_label_size', 'acm_icon_color']) && empty($_POST[$input_name]) ) {
+                if ( in_array($input_name, ['acm_image_id', 'acm_url', 'acm_img_width', 'acm_value_size', 'acm_label_size', 'acm_icon_color', 'acm_label_color']) && empty($_POST[$input_name]) ) {
                     delete_post_meta( $post_id, $key );
                 }
             }

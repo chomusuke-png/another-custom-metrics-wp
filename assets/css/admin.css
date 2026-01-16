@@ -35,6 +35,7 @@
 
 .acm-grid-2 { grid-template-columns: 1fr 1fr; }
 .acm-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+.acm-grid-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
 .acm-grid-main { grid-template-columns: 3fr 1fr; } /* Para Valor + Tamaño */
 
 /* Campos Individuales */

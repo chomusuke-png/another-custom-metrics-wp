@@ -1,5 +1,5 @@
 <?php
-// Variables disponibles: ... $metric_icon_color, $metric_value, etc.
+// Variables disponibles: ... $metric_icon_color, $metric_label_color
 wp_nonce_field('acm_save_metabox_data', 'acm_metabox_nonce');
 ?>
 
@@ -52,7 +52,6 @@ wp_nonce_field('acm_save_metabox_data', 'acm_metabox_nonce');
         <div class="acm-image-preview-box" id="acm_image_wrapper" style="<?php echo $image_url ? 'display:flex' : 'display:none'; ?>;">
             <?php 
                 $preview_width = $metric_img_width ? intval($metric_img_width) : 80; 
-                // Style inline solo para el ancho dinámico de la preview
             ?>
             <img id="acm_image_preview_tag" src="<?php echo esc_url($image_url); ?>" style="width: <?php echo $preview_width; ?>px;">
         </div>
@@ -135,11 +134,17 @@ wp_nonce_field('acm_save_metabox_data', 'acm_metabox_nonce');
             <button type="button" id="acm_reset_colors" class="button button-small">Restablecer Colores</button>
         </div>
 
-        <div class="acm-grid acm-grid-3">
+        <div class="acm-grid acm-grid-4">
             <div class="acm-field">
-                <label for="acm_color">Color Acento (Texto)</label>
+                <label for="acm_color">Color Valor (Acento)</label>
                 <input type="color" id="acm_color" name="acm_color" value="<?php echo esc_attr($metric_color ? $metric_color : '#0073aa'); ?>">
             </div>
+            
+            <div class="acm-field">
+                <label for="acm_label_color">Color Etiqueta</label>
+                <input type="color" id="acm_label_color" name="acm_label_color" value="<?php echo esc_attr($metric_label_color ? $metric_label_color : '#666666'); ?>">
+            </div>
+
             <div class="acm-field">
                 <label for="acm_bg_color">Color Fondo</label>
                 <input type="color" id="acm_bg_color" name="acm_bg_color" value="<?php echo esc_attr($metric_bg_color ? $metric_bg_color : '#ffffff'); ?>">

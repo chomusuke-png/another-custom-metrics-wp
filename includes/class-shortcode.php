@@ -15,6 +15,7 @@ class ACM_Shortcode {
             'gap'          => '20px',   
             // -- Overrides Globales --
             'color'        => '',       
+            'label_color'  => '',
             'bg_color'     => '',       
             'border_color' => '',       
             'value_size'   => '',       
@@ -29,19 +30,17 @@ class ACM_Shortcode {
         
         $overrides = [];
         if ( ! empty( $atts['color'] ) )        $overrides['color']        = $atts['color'];
+        if ( ! empty( $atts['label_color'] ) )  $overrides['label_color']  = $atts['label_color']; // NUEVO
         if ( ! empty( $atts['bg_color'] ) )     $overrides['bg_color']     = $atts['bg_color'];
         if ( ! empty( $atts['border_color'] ) ) $overrides['border_color'] = $atts['border_color'];
         if ( ! empty( $atts['value_size'] ) )   $overrides['value_size']   = $atts['value_size'];
         if ( ! empty( $atts['label_size'] ) )   $overrides['label_size']   = $atts['label_size'];
         if ( ! empty( $atts['icon_color'] ) )   $overrides['icon_color']   = $atts['icon_color'];
 
-        // 1. LIMITES: Subimos el límite a 12 (razonable para bootstrap/grids estándar)
         $cols = intval( $atts['cols'] );
         if ( $cols < 1 ) $cols = 1;
         if ( $cols > 12 ) $cols = 12;
 
-        // 2. ESTILOS: Pasamos la variable CSS para que la hoja de estilos la use
-        // display: grid y gap se mantienen, pero grid-template-columns lo maneja el CSS
         $grid_style  = "display: grid; gap: " . esc_attr($atts['gap']) . ";";
         $grid_style .= "--acm-cols: " . $cols . ";";
         
@@ -98,6 +97,7 @@ class ACM_Shortcode {
         if ( empty( $img_width ) ) $img_width = 80;
 
         $color        = $get_val( 'color', '_acm_color' );
+        $label_color  = $get_val( 'label_color', '_acm_label_color' ); // NUEVO
         $bg_color     = $get_val( 'bg_color', '_acm_bg_color' );
         $border_color = $get_val( 'border_color', '_acm_border_color' );
         $value_size   = $get_val( 'value_size', '_acm_value_size', '3' );
@@ -112,12 +112,18 @@ class ACM_Shortcode {
         $formatted_number = ACM_Utils::format_metric( $raw_value, $format, (int)$decimals );
         $final_output     = esc_html( $prefix ) . $formatted_number . esc_html( $suffix );
 
+        // Estilo Valor
         $value_style_arr = [];
         if ( $color ) { $value_style_arr[] = "color: {$color}; border-color: {$color};"; }
         $value_style_arr[] = "font-size: " . floatval($value_size) . "rem;";
         $value_style = 'style="' . implode( ' ', $value_style_arr ) . '"';
 
-        $label_style = 'style="font-size: ' . floatval($label_size) . 'rem;"';
+        // Estilo Label (AQUÍ AÑADIMOS EL COLOR)
+        $label_style_arr = [];
+        $label_style_arr[] = 'font-size: ' . floatval($label_size) . 'rem;';
+        if ( $label_color ) { $label_style_arr[] = "color: {$label_color};"; }
+        
+        $label_style = 'style="' . implode( ' ', $label_style_arr ) . '"';
 
         $card_style_arr = [];
         if ( $bg_color ) { $card_style_arr[] = "background-color: {$bg_color};"; }

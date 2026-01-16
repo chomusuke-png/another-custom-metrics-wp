@@ -31,15 +31,14 @@ class ACM_Ajax {
         $anim      = isset($_POST['acm_anim']) ? sanitize_key($_POST['acm_anim']) : 'count';
         
         $color        = isset($_POST['acm_color']) ? sanitize_hex_color($_POST['acm_color']) : '';
+        $label_color  = isset($_POST['acm_label_color']) ? sanitize_hex_color($_POST['acm_label_color']) : ''; // NUEVO
         $bg_color     = isset($_POST['acm_bg_color']) ? sanitize_hex_color($_POST['acm_bg_color']) : '';
         $border_color = isset($_POST['acm_border_color']) ? sanitize_hex_color($_POST['acm_border_color']) : '';
 
-        // Imagen e Icono
         $image_id  = isset($_POST['acm_image_id']) ? intval($_POST['acm_image_id']) : 0;
         $img_width = isset($_POST['acm_img_width']) ? intval($_POST['acm_img_width']) : 80;
-        $icon_color = isset($_POST['acm_icon_color']) ? sanitize_hex_color($_POST['acm_icon_color']) : ''; // NUEVO
+        $icon_color = isset($_POST['acm_icon_color']) ? sanitize_hex_color($_POST['acm_icon_color']) : '';
 
-        // Render via Utils
         $image_html = ACM_Utils::render_icon_html( $image_id, $img_width, $icon_color );
 
         $formatted_number = ACM_Utils::format_metric( $raw_value, $format, $decimals );
@@ -52,7 +51,10 @@ class ACM_Ajax {
         $value_style = 'style="' . implode( ' ', $value_style_arr ) . '"';
 
         // Estilos Label
-        $label_style = 'style="font-size: ' . floatval($label_size) . 'rem;"';
+        $label_style_arr = [];
+        $label_style_arr[] = 'font-size: ' . floatval($label_size) . 'rem;';
+        if ( $label_color ) { $label_style_arr[] = "color: {$label_color};"; }
+        $label_style = 'style="' . implode( ' ', $label_style_arr ) . '"';
 
         // Estilos Tarjeta
         $card_style_arr = [];
