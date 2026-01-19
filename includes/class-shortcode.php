@@ -11,6 +11,7 @@ class ACM_Shortcode {
     public function render_group_shortcode( $atts ) {
         $atts = shortcode_atts( [
             'ids'          => '',       
+            'title'        => '',
             'cols'         => '3',      
             'gap'          => '20px',   
             // -- Overrides Globales --
@@ -30,7 +31,7 @@ class ACM_Shortcode {
         
         $overrides = [];
         if ( ! empty( $atts['color'] ) )        $overrides['color']        = $atts['color'];
-        if ( ! empty( $atts['label_color'] ) )  $overrides['label_color']  = $atts['label_color']; // NUEVO
+        if ( ! empty( $atts['label_color'] ) )  $overrides['label_color']  = $atts['label_color'];
         if ( ! empty( $atts['bg_color'] ) )     $overrides['bg_color']     = $atts['bg_color'];
         if ( ! empty( $atts['border_color'] ) ) $overrides['border_color'] = $atts['border_color'];
         if ( ! empty( $atts['value_size'] ) )   $overrides['value_size']   = $atts['value_size'];
@@ -44,7 +45,14 @@ class ACM_Shortcode {
         $grid_style  = "display: grid; gap: " . esc_attr($atts['gap']) . ";";
         $grid_style .= "--acm-cols: " . $cols . ";";
         
-        $output = '<div class="acm-group-container" style="' . $grid_style . '">';
+        $output = '';
+
+        // Renderizado del título H3 si existe
+        if ( ! empty( $atts['title'] ) ) {
+            $output .= '<h2 class="wp-block-heading">' . esc_html( $atts['title'] ) . '</h2>';
+        }
+
+        $output .= '<div class="acm-group-container" style="' . $grid_style . '">';
         
         foreach ( $ids_array as $post_id ) {
             if ( $post_id && get_post_type( $post_id ) === 'acm_widget' ) {
@@ -97,7 +105,7 @@ class ACM_Shortcode {
         if ( empty( $img_width ) ) $img_width = 80;
 
         $color        = $get_val( 'color', '_acm_color' );
-        $label_color  = $get_val( 'label_color', '_acm_label_color' ); // NUEVO
+        $label_color  = $get_val( 'label_color', '_acm_label_color' );
         $bg_color     = $get_val( 'bg_color', '_acm_bg_color' );
         $border_color = $get_val( 'border_color', '_acm_border_color' );
         $value_size   = $get_val( 'value_size', '_acm_value_size', '3' );
@@ -118,7 +126,7 @@ class ACM_Shortcode {
         $value_style_arr[] = "font-size: " . floatval($value_size) . "rem;";
         $value_style = 'style="' . implode( ' ', $value_style_arr ) . '"';
 
-        // Estilo Label (AQUÍ AÑADIMOS EL COLOR)
+        // Estilo Label
         $label_style_arr = [];
         $label_style_arr[] = 'font-size: ' . floatval($label_size) . 'rem;';
         if ( $label_color ) { $label_style_arr[] = "color: {$label_color};"; }
